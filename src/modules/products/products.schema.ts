@@ -98,5 +98,22 @@ export const DeleteProductSchema = {
   },
 };
 
+export const BestSellerProductSchema = Type.Intersect([
+  ProductSchema,
+  Type.Object({
+    total_sold: Type.Number({ description: 'Total quantity sold' }),
+  })
+]);
+
+export const GetBestSellersSchema = {
+  query: Type.Object({
+    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 50, default: 5, description: 'Number of products to show' })),
+  }),
+  response: {
+    200: createStandardResponseSchema(Type.Array(BestSellerProductSchema)),
+  },
+};
+
 export type ListProductsQuery = Static<typeof ListProductsSchema.query>;
 export type Product = Static<typeof ProductSchema>;
+export type GetBestSellersQuery = Static<typeof GetBestSellersSchema.query>;

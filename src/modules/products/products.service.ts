@@ -1,11 +1,37 @@
 import { db } from '../../config/database.js';
-import { products, categories } from '../../db/schema.js';
-import { eq, or, and, sql, count } from 'drizzle-orm';
+import { products, categories, orderItems } from '../../db/schema.js';
+import { eq, or, and, sql, count, desc } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { type ListProductsQuery } from './products.schema.js';
 import { uploadImage } from '../../shared/utils/imagekit.util.js';
 
 export class ProductsService {
+  async getBestSellers(limit: number = 5) {
+    const result = await db.select({
+      id: products.id,
+      category_id: products.categoryId,
+      name: products.name,
+      slug: products.slug,
+      description: products.description,
+      price: products.price,
+      stock: products.stock,
+      image_url: products.imageUrl,
+      created_at: products.createdAt,
+      updated_at: products.updatedAt,
+      total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
+    })
+    .from(orderItems)
+    .innerJoin(products, eq(orderItems.productId, products.id))
+    .groupBy(products.id)
+    .orderBy(desc(sql`SUM(${orderItems.quantity})`))
+    .limit(limit);
+
+    return result.map(row => ({
+      ...row,
+      total_sold: Number(row.total_sold),
+    }));
+  }
+
   async list(query: ListProductsQuery) {
     const page = query.page || 1;
     const limit = query.limit || 10;

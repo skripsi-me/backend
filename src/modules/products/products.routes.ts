@@ -9,13 +9,23 @@ import {
   UpdateProductSchema,
   DeleteProductSchema,
   GetProductBySlugSchema,
-  ListProductsByCategorySchema
+  ListProductsByCategorySchema,
+  GetBestSellersSchema
 } from './products.schema.js';
 
 export const productsRoutes = async (fastify: FastifyInstance) => {
   const provider = fastify.withTypeProvider<TypeBoxTypeProvider>();
   const productsService = new ProductsService();
   const productsController = new ProductsController(productsService);
+
+  provider.get('/best-sellers', {
+    schema: {
+      ...GetBestSellersSchema,
+      tags: ['Products'],
+      summary: 'Get best seller products',
+      description: 'Returns a list of products ordered by total quantity sold. Default limit is 5.',
+    }
+  }, productsController.getBestSellers.bind(productsController));
 
   provider.get('/', { 
     schema: {

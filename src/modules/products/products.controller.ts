@@ -1,10 +1,16 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { ProductsService } from './products.service.js';
-import { type ListProductsQuery } from './products.schema.js';
+import { type ListProductsQuery, type GetBestSellersQuery } from './products.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
+
+  async getBestSellers(request: FastifyRequest<{ Querystring: GetBestSellersQuery }>, reply: FastifyReply) {
+    const limit = request.query.limit || 5;
+    const products = await this.productsService.getBestSellers(limit);
+    return reply.success(products);
+  }
 
   async list(request: FastifyRequest<{ Querystring: ListProductsQuery }>, reply: FastifyReply) {
     const result = await this.productsService.list(request.query);
