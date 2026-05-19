@@ -3,15 +3,15 @@ import { createStandardResponseSchema } from '../../shared/utils/response.util.j
 
 export const ProductSchema = Type.Object({
   id: Type.String({ description: 'Product ULID' }),
-  categoryId: Type.Union([Type.String(), Type.Null()], { description: 'Category ULID' }),
+  category_id: Type.Union([Type.String(), Type.Null()], { description: 'Category ULID' }),
   name: Type.String({ description: 'Product name' }),
   slug: Type.String({ description: 'URL-friendly product name' }),
   description: Type.Union([Type.String(), Type.Null()], { description: 'Product description' }),
   price: Type.String({ description: 'Product price (decimal string)' }),
   stock: Type.Number({ description: 'Available stock quantity' }),
-  imageUrl: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
-  createdAt: Type.Any({ description: 'Creation timestamp' }),
-  updatedAt: Type.Any({ description: 'Last update timestamp' }),
+  image_url: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
+  created_at: Type.Any({ description: 'Creation timestamp' }),
+  updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
 
 export const ListProductsSchema = {
@@ -19,7 +19,7 @@ export const ListProductsSchema = {
     page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
     limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 10, description: 'Items per page' })),
     search: Type.Optional(Type.String({ description: 'Search term for name or description' })),
-    categoryId: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
+    category_id: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
   }),
   response: {
     200: createStandardResponseSchema(Type.Object({
@@ -28,7 +28,7 @@ export const ListProductsSchema = {
         total: Type.Number({ description: 'Total number of items' }),
         page: Type.Number({ description: 'Current page number' }),
         limit: Type.Number({ description: 'Items per page' }),
-        totalPages: Type.Number({ description: 'Total number of pages' }),
+        total_pages: Type.Number({ description: 'Total number of pages' }),
       }),
     })),
   },
@@ -54,7 +54,7 @@ export const GetProductBySlugSchema = {
 
 export const ListProductsByCategorySchema = {
   params: Type.Object({
-    categorySlug: Type.String({ description: 'Category slug' }),
+    category_slug: Type.String({ description: 'Category slug' }),
   }),
   query: Type.Object({
     page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
@@ -67,7 +67,7 @@ export const ListProductsByCategorySchema = {
         total: Type.Number({ description: 'Total number of items' }),
         page: Type.Number({ description: 'Current page number' }),
         limit: Type.Number({ description: 'Items per page' }),
-        totalPages: Type.Number({ description: 'Total number of pages' }),
+        total_pages: Type.Number({ description: 'Total number of pages' }),
       }),
     })),
   },

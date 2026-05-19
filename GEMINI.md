@@ -73,4 +73,5 @@ A `.env` file is required in the root. Refer to `.env.example` for the list of m
   - Classes: `PascalCase`
   - Methods/Variables: `camelCase`
   - Schemas: `PascalCase` suffix with `Schema` (e.g., `UserSchema`)
+  - Request/Response API: `snake_case`
 - **Security:** Helmet and CORS are enabled globally via plugins in `src/plugins/`.

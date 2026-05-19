@@ -37,7 +37,7 @@ export class AuthController {
         sameSite: 'strict',
         signed: true,
       })
-      .setCookie('refreshToken', refreshToken, {
+      .setCookie('refresh_token', refreshToken, {
         path: '/api/auth/refresh',
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -48,7 +48,7 @@ export class AuthController {
   }
 
   async refreshToken(request: FastifyRequest, reply: FastifyReply) {
-    const { refreshToken } = request.cookies;
+    const { refresh_token: refreshToken } = request.cookies;
     if (!refreshToken) {
       return reply.status(401).send(formatError(401, 'Refresh token missing'));
     }
@@ -82,7 +82,7 @@ export class AuthController {
   async changePassword(request: FastifyRequest<{ Body: ChangePasswordBody }>, reply: FastifyReply) {
     const userId = request.user.id;
     try {
-      await this.authService.changePassword(userId, request.body.oldPassword, request.body.newPassword);
+      await this.authService.changePassword(userId, request.body.old_password, request.body.new_password);
       return reply.success({ status: 'ok' }, 'Password changed successfully');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to change password';
@@ -98,7 +98,7 @@ export class AuthController {
 
     return reply
       .clearCookie('token', { path: '/' })
-      .clearCookie('refreshToken', { path: '/api/auth/refresh' })
+      .clearCookie('refresh_token', { path: '/api/auth/refresh' })
       .success({ status: 'ok' }, 'Logged out successfully');
   }
 }

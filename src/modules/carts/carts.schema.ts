@@ -3,19 +3,19 @@ import { createStandardResponseSchema } from '../../shared/utils/response.util.j
 
 export const CartItemSchema = Type.Object({
   id: Type.String({ description: 'Cart item ULID' }),
-  cartId: Type.String({ description: 'Cart ULID' }),
-  productId: Type.String({ description: 'Product ULID' }),
+  cart_id: Type.String({ description: 'Cart ULID' }),
+  product_id: Type.String({ description: 'Product ULID' }),
   quantity: Type.Number({ description: 'Quantity of the product in the cart' }),
   product: Type.Optional(Type.Object({
     name: Type.String({ description: 'Product name' }),
     price: Type.String({ description: 'Product price' }),
-    imageUrl: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
+    image_url: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
   })),
 });
 
 export const CartSchema = Type.Object({
   id: Type.String({ description: 'Cart ULID' }),
-  userId: Type.String({ description: 'User ULID' }),
+  user_id: Type.String({ description: 'User ULID' }),
   items: Type.Array(CartItemSchema, { description: 'List of items in the cart' }),
 });
 
@@ -27,7 +27,7 @@ export const GetCartSchema = {
 
 export const AddToCartSchema = {
   body: Type.Object({
-    productId: Type.String({ description: 'Product ULID to add' }),
+    product_id: Type.String({ description: 'Product ULID to add' }),
     quantity: Type.Number({ minimum: 1, description: 'Quantity to add' }),
   }),
   response: {
@@ -37,7 +37,7 @@ export const AddToCartSchema = {
 
 export const UpdateCartItemSchema = {
   params: Type.Object({
-    itemId: Type.String({ description: 'Cart item ULID' }),
+    item_id: Type.String({ description: 'Cart item ULID' }),
   }),
   body: Type.Object({
     quantity: Type.Number({ minimum: 1, description: 'New quantity' }),
@@ -49,7 +49,7 @@ export const UpdateCartItemSchema = {
 
 export const RemoveCartItemSchema = {
   params: Type.Object({
-    itemId: Type.String({ description: 'Cart item ULID' }),
+    item_id: Type.String({ description: 'Cart item ULID' }),
   }),
   response: {
     200: createStandardResponseSchema(CartSchema),

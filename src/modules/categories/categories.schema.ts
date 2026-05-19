@@ -6,8 +6,8 @@ export const CategorySchema = Type.Object({
   name: Type.String({ description: 'Category name' }),
   slug: Type.String({ description: 'URL-friendly category name' }),
   description: Type.Union([Type.String(), Type.Null()], { description: 'Category description' }),
-  createdAt: Type.Any({ description: 'Creation timestamp' }),
-  updatedAt: Type.Any({ description: 'Last update timestamp' }),
+  created_at: Type.Any({ description: 'Creation timestamp' }),
+  updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
 
 export const GetCategoriesSchema = {

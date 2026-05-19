@@ -12,7 +12,7 @@ export class UserService {
       email: users.email,
       name: users.name,
       address: users.address,
-      phoneNumber: users.phoneNumber,
+      phone_number: users.phoneNumber,
       role: users.role,
     }).from(users);
   }
@@ -23,7 +23,7 @@ export class UserService {
       email: users.email,
       name: users.name,
       address: users.address,
-      phoneNumber: users.phoneNumber,
+      phone_number: users.phoneNumber,
       role: users.role,
     }).from(users).where(eq(users.id, id)).limit(1);
     return user;
@@ -39,7 +39,7 @@ export class UserService {
       password: hashedPassword,
       name: data.name,
       address: data.address,
-      phoneNumber: data.phoneNumber,
+      phoneNumber: data.phone_number,
       role: data.role || 'user',
     });
 
@@ -53,12 +53,22 @@ export class UserService {
       updateData.password = await hashPassword(data.password);
     }
 
+    if (data.phone_number) {
+      updateData.phoneNumber = data.phone_number;
+      delete updateData.phone_number;
+    }
+
     await db.update(users).set(updateData).where(eq(users.id, id));
     return this.getById(id);
   }
 
   async updateProfile(id: string, data: UpdateProfileBody) {
-    await db.update(users).set(data).where(eq(users.id, id));
+    const updateData: any = { ...data };
+    if (data.phone_number) {
+      updateData.phoneNumber = data.phone_number;
+      delete updateData.phone_number;
+    }
+    await db.update(users).set(updateData).where(eq(users.id, id));
     return this.getById(id);
   }
 

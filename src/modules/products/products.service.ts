@@ -21,18 +21,29 @@ export class ProductsService {
       );
     }
 
-    if (query.categoryId) {
-      const catFilter = eq(products.categoryId, query.categoryId);
+    if (query.category_id) {
+      const catFilter = eq(products.categoryId, query.category_id);
       whereClause = whereClause ? and(whereClause, catFilter) : catFilter;
     }
 
     const [data, totalResult] = await Promise.all([
-      db.select().from(products).where(whereClause).limit(limit).offset(offset),
+      db.select({
+        id: products.id,
+        category_id: products.categoryId,
+        name: products.name,
+        slug: products.slug,
+        description: products.description,
+        price: products.price,
+        stock: products.stock,
+        image_url: products.imageUrl,
+        created_at: products.createdAt,
+        updated_at: products.updatedAt,
+      }).from(products).where(whereClause).limit(limit).offset(offset),
       db.select({ value: count() }).from(products).where(whereClause)
     ]);
 
     const total = totalResult[0]?.value || 0;
-    const totalPages = Math.ceil(total / limit);
+    const total_pages = Math.ceil(total / limit);
 
     return {
       data,
@@ -40,19 +51,41 @@ export class ProductsService {
         total,
         page,
         limit,
-        totalPages,
+        total_pages,
       },
     };
   }
 
   async getById(id: string) {
-    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
-    return result[0];
+    const [product] = await db.select({
+      id: products.id,
+      category_id: products.categoryId,
+      name: products.name,
+      slug: products.slug,
+      description: products.description,
+      price: products.price,
+      stock: products.stock,
+      image_url: products.imageUrl,
+      created_at: products.createdAt,
+      updated_at: products.updatedAt,
+    }).from(products).where(eq(products.id, id)).limit(1);
+    return product;
   }
 
   async getBySlug(slug: string) {
-    const result = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
-    return result[0];
+    const [product] = await db.select({
+      id: products.id,
+      category_id: products.categoryId,
+      name: products.name,
+      slug: products.slug,
+      description: products.description,
+      price: products.price,
+      stock: products.stock,
+      image_url: products.imageUrl,
+      created_at: products.createdAt,
+      updated_at: products.updatedAt,
+    }).from(products).where(eq(products.slug, slug)).limit(1);
+    return product;
   }
 
   async listByCategorySlug(categorySlug: string, query: { page?: number; limit?: number }) {
@@ -63,15 +96,15 @@ export class ProductsService {
     const [data, totalResult] = await Promise.all([
       db.select({
         id: products.id,
-        categoryId: products.categoryId,
+        category_id: products.categoryId,
         name: products.name,
         slug: products.slug,
         description: products.description,
         price: products.price,
         stock: products.stock,
-        imageUrl: products.imageUrl,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
+        image_url: products.imageUrl,
+        created_at: products.createdAt,
+        updated_at: products.updatedAt,
       })
       .from(products)
       .innerJoin(categories, eq(products.categoryId, categories.id))
@@ -85,11 +118,11 @@ export class ProductsService {
     ]);
 
     const total = totalResult[0]?.value || 0;
-    const totalPages = Math.ceil(total / limit);
+    const total_pages = Math.ceil(total / limit);
 
     return {
       data,
-      meta: { total, page, limit, totalPages },
+      meta: { total, page, limit, total_pages },
     };
   }
 
@@ -108,20 +141,28 @@ export class ProductsService {
       description: data.description,
       price: data.price,
       stock: parseInt(data.stock),
-      categoryId: data.categoryId,
-      imageUrl,
+      categoryId: data.category_id,
+      imageUrl: imageUrl || data.image_url,
     });
 
     return this.getById(id);
   }
 
   async update(id: string, data: any, file?: { buffer: Buffer; filename: string }) {
-    const updateData = { ...data };
+    const updateData: any = { ...data };
     
     if (data.stock) updateData.stock = parseInt(data.stock);
 
     if (file) {
       updateData.imageUrl = await uploadImage(file.buffer, `${id}_${file.filename}`);
+    } else if (data.image_url) {
+      updateData.imageUrl = data.image_url;
+      delete updateData.image_url;
+    }
+
+    if (data.category_id) {
+      updateData.categoryId = data.category_id;
+      delete updateData.category_id;
     }
 
     await db.update(products).set(updateData).where(eq(products.id, id));

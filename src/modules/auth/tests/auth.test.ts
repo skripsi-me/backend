@@ -45,13 +45,13 @@ describe('Auth Module', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.cookies.some((c) => c.name === 'token')).toBe(true);
-    expect(response.cookies.some((c) => c.name === 'refreshToken')).toBe(true);
+    expect(response.cookies.some((c) => c.name === 'refresh_token')).toBe(true);
     const body = JSON.parse(response.body);
     expect(body.data.status).toBe('ok');
   });
 
   it('should refresh the token', async () => {
-    // Login to get refreshToken
+    // Login to get refresh_token
     const loginResponse = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
@@ -61,13 +61,13 @@ describe('Auth Module', () => {
       },
     });
 
-    const refreshToken = loginResponse.cookies.find((c) => c.name === 'refreshToken')!;
+    const refreshToken = loginResponse.cookies.find((c) => c.name === 'refresh_token')!;
 
     const response = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
       cookies: {
-        refreshToken: refreshToken.value,
+        refresh_token: refreshToken.value,
       },
     });
 

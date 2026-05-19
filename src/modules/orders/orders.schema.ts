@@ -3,10 +3,10 @@ import { createStandardResponseSchema } from '../../shared/utils/response.util.j
 
 export const OrderItemSchema = Type.Object({
   id: Type.String({ description: 'Order item ULID' }),
-  orderId: Type.String({ description: 'Order ULID' }),
-  productId: Type.String({ description: 'Product ULID' }),
+  order_id: Type.String({ description: 'Order ULID' }),
+  product_id: Type.String({ description: 'Product ULID' }),
   quantity: Type.Number({ description: 'Quantity purchased' }),
-  priceAtPurchase: Type.String({ description: 'Price per unit at the time of purchase' }),
+  price_at_purchase: Type.String({ description: 'Price per unit at the time of purchase' }),
   product: Type.Optional(Type.Object({
     name: Type.String({ description: 'Product name' }),
   })),
@@ -14,10 +14,10 @@ export const OrderItemSchema = Type.Object({
 
 export const OrderSchema = Type.Object({
   id: Type.String({ description: 'Order ULID' }),
-  userId: Type.String({ description: 'User ULID who placed the order' }),
-  totalAmount: Type.String({ description: 'Total order amount' }),
+  user_id: Type.String({ description: 'User ULID who placed the order' }),
+  total_amount: Type.String({ description: 'Total order amount' }),
   status: Type.String({ description: 'Order status (pending, shipped, delivered, cancelled)' }),
-  createdAt: Type.Any({ description: 'Order creation timestamp' }),
+  created_at: Type.Any({ description: 'Order creation timestamp' }),
   items: Type.Optional(Type.Array(OrderItemSchema, { description: 'List of items in the order' })),
 });
 

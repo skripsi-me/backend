@@ -73,7 +73,7 @@ describe('Carts Module', () => {
       url: '/api/carts/items',
       cookies: { token: userCookie },
       payload: {
-        productId,
+        product_id: productId,
         quantity: 2,
       },
     });
@@ -82,7 +82,7 @@ describe('Carts Module', () => {
     const body = JSON.parse(response.body);
     expect(body.metadata.code).toBe(200);
     expect(body.data.items.length).toBe(1);
-    expect(body.data.items[0].productId).toBe(productId);
+    expect(body.data.items[0].product_id).toBe(productId);
     expect(body.data.items[0].quantity).toBe(2);
   });
 });

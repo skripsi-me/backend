@@ -6,10 +6,12 @@ import { type AddToCartBody, type UpdateCartItemBody, type Cart } from './carts.
 
 export class CartsService {
   async getByUserId(userId: string): Promise<Cart> {
-    const cartResult = await db.select().from(carts).where(eq(carts.userId, userId)).limit(1);
-    let cart = cartResult[0];
+    const [cartData] = await db.select({
+      id: carts.id,
+      user_id: carts.userId,
+    }).from(carts).where(eq(carts.userId, userId)).limit(1);
 
-    if (!cart) {
+    if (!cartData) {
       const id = ulid();
       await db.insert(carts).values({ id, userId });
       return this.getByUserId(userId);
@@ -17,21 +19,21 @@ export class CartsService {
 
     const items = await db.select({
       id: cartItems.id,
-      cartId: cartItems.cartId,
-      productId: cartItems.productId,
+      cart_id: cartItems.cartId,
+      product_id: cartItems.productId,
       quantity: cartItems.quantity,
       product: {
         name: products.name,
         price: products.price,
-        imageUrl: products.imageUrl,
+        image_url: products.imageUrl,
       }
     })
     .from(cartItems)
     .innerJoin(products, eq(cartItems.productId, products.id))
-    .where(eq(cartItems.cartId, cart.id));
+    .where(eq(cartItems.cartId, cartData.id));
 
     return {
-      ...cart,
+      ...cartData,
       items
     };
   }
@@ -40,7 +42,7 @@ export class CartsService {
     const cart = await this.getByUserId(userId);
     
     const existingItemResult = await db.select().from(cartItems)
-      .where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, data.productId)))
+      .where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, data.product_id)))
       .limit(1);
     
     const existingItem = existingItemResult[0];
@@ -53,7 +55,7 @@ export class CartsService {
       await db.insert(cartItems).values({
         id: ulid(),
         cartId: cart.id,
-        productId: data.productId,
+        productId: data.product_id,
         quantity: data.quantity
       });
     }

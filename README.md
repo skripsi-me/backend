@@ -66,15 +66,15 @@ Uses `refreshToken` cookie to issue a new access `token`.
 Handles user profiles and administrative management.
 
 ### Get My Profile
-`GET /api/user/me`
+`GET /api/users/me`
 *Requires Authentication*
 
 ### Update My Profile
-`PATCH /api/user/me`
+`PATCH /api/users/me`
 *Requires Authentication*
 
 ### Admin: List All Users
-`GET /api/user`
+`GET /api/users`
 *Requires Admin Role*
 
 ---

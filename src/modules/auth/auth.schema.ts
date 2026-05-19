@@ -8,7 +8,7 @@ export const RegisterSchema = {
     password: Type.String({ minLength: 8, description: 'User password (min 8 characters)' }),
     name: Type.String({ minLength: 1, description: 'User full name' }),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
-    phoneNumber: Type.Optional(Type.String({ description: 'User contact phone number' })),
+    phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
     role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
   }),
   response: {
@@ -30,8 +30,8 @@ export const LoginSchema = {
 
 export const ChangePasswordSchema = {
   body: Type.Object({
-    oldPassword: Type.String({ description: 'Current password' }),
-    newPassword: Type.String({ minLength: 8, description: 'New password (min 8 characters)' }),
+    old_password: Type.String({ description: 'Current password' }),
+    new_password: Type.String({ minLength: 8, description: 'New password (min 8 characters)' }),
   }),
   response: {
     200: createStandardResponseSchema(Type.Object({

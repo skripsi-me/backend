@@ -61,7 +61,7 @@ describe('User Module', () => {
   it('should get current user profile', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: '/api/user/me',
+      url: '/api/users/me',
       cookies: { token: userCookie },
     });
 
@@ -73,7 +73,7 @@ describe('User Module', () => {
   it('should list all users (admin only)', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: '/api/user',
+      url: '/api/users',
       cookies: { token: adminCookie },
     });
 
@@ -86,7 +86,7 @@ describe('User Module', () => {
   it('should fail to list all users if not admin', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: '/api/user',
+      url: '/api/users',
       cookies: { token: userCookie },
     });
 

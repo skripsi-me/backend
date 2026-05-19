@@ -31,7 +31,7 @@ export class OrdersController {
       return reply.status(404).send(formatError(404, 'Order not found'));
     }
 
-    if (role !== 'admin' && userId !== order.userId) {
+    if (role !== 'admin' && userId !== order.user_id) {
       return reply.status(403).send(formatError(403, 'Access denied'));
     }
 

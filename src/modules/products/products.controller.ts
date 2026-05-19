@@ -27,8 +27,8 @@ export class ProductsController {
     return reply.success(product, 'Product retrieved successfully');
   }
 
-  async listByCategorySlug(request: FastifyRequest<{ Params: { categorySlug: string }; Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
-    const result = await this.productsService.listByCategorySlug(request.params.categorySlug, request.query);
+  async listByCategorySlug(request: FastifyRequest<{ Params: { category_slug: string }; Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+    const result = await this.productsService.listByCategorySlug(request.params.category_slug, request.query);
     return reply.success(result, 'Products retrieved successfully');
   }
 

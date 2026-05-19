@@ -6,7 +6,7 @@ export const UserSchema = Type.Object({
   email: Type.String({ format: 'email', description: 'User email address' }),
   name: Type.String({ description: 'User full name' }),
   address: Type.Union([Type.String(), Type.Null()], { description: 'User physical address' }),
-  phoneNumber: Type.Union([Type.String(), Type.Null()], { description: 'User contact phone number' }),
+  phone_number: Type.Union([Type.String(), Type.Null()], { description: 'User contact phone number' }),
   role: Type.String({ description: 'User role (user, admin)' }),
 });
 
@@ -37,7 +37,7 @@ export const CreateUserSchema = {
     password: Type.String({ minLength: 8, description: 'User password (min 8 characters)' }),
     name: Type.String({ minLength: 1, description: 'User full name' }),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
-    phoneNumber: Type.Optional(Type.String({ description: 'User contact phone number' })),
+    phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
     role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
   }),
   response: {
@@ -54,7 +54,7 @@ export const UpdateUserSchema = {
     password: Type.Optional(Type.String({ minLength: 8, description: 'User password (min 8 characters)' })),
     name: Type.Optional(Type.String({ minLength: 1, description: 'User full name' })),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
-    phoneNumber: Type.Optional(Type.String({ description: 'User contact phone number' })),
+    phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
     role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
   }),
   response: {
@@ -66,7 +66,7 @@ export const UpdateProfileSchema = {
   body: Type.Object({
     name: Type.Optional(Type.String({ minLength: 1, description: 'User full name' })),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
-    phoneNumber: Type.Optional(Type.String({ description: 'User contact phone number' })),
+    phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
   }),
   response: {
     200: createStandardResponseSchema(UserSchema),

@@ -6,12 +6,26 @@ import { type CreateCategoryBody, type UpdateCategoryBody } from './categories.s
 
 export class CategoriesService {
   async getAll() {
-    return db.select().from(categories);
+    return db.select({
+      id: categories.id,
+      name: categories.name,
+      slug: categories.slug,
+      description: categories.description,
+      created_at: categories.createdAt,
+      updated_at: categories.updatedAt,
+    }).from(categories);
   }
 
   async getById(id: string) {
-    const result = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
-    return result[0];
+    const [category] = await db.select({
+      id: categories.id,
+      name: categories.name,
+      slug: categories.slug,
+      description: categories.description,
+      created_at: categories.createdAt,
+      updated_at: categories.updatedAt,
+    }).from(categories).where(eq(categories.id, id)).limit(1);
+    return category;
   }
 
   async create(data: CreateCategoryBody) {

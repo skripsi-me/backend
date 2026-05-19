@@ -80,7 +80,7 @@ describe('Orders Module', () => {
       method: 'POST',
       url: '/api/carts/items',
       cookies: { token: userCookie },
-      payload: { productId, quantity: 1 },
+      payload: { product_id: productId, quantity: 1 },
     });
 
     // 2. Checkout
@@ -94,7 +94,7 @@ describe('Orders Module', () => {
     const body = JSON.parse(response.body);
     expect(body.metadata.code).toBe(201);
     expect(body.data.status).toBe('pending');
-    expect(body.data.totalAmount).toBe('50.00');
+    expect(body.data.total_amount).toBe('50.00');
     expect(body.data.items.length).toBe(1);
     
     // Verify stock decreased

@@ -24,7 +24,7 @@ export class OrdersService {
       return {
         id: ulid(),
         orderId,
-        productId: item.productId,
+        productId: item.product_id,
         quantity: item.quantity,
         priceAtPurchase: item.product!.price,
       };
@@ -44,7 +44,7 @@ export class OrdersService {
       for (const item of cart.items) {
         await tx.update(products)
           .set({ stock: sql`${products.stock} - ${item.quantity}` })
-          .where(eq(products.id, item.productId));
+          .where(eq(products.id, item.product_id));
       }
 
       // Clear cart
@@ -55,16 +55,22 @@ export class OrdersService {
   }
 
   async getById(id: string) {
-    const orderResult = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
-    const order = orderResult[0];
+    const [order] = await db.select({
+      id: orders.id,
+      user_id: orders.userId,
+      total_amount: orders.totalAmount,
+      status: orders.status,
+      created_at: orders.createdAt,
+    }).from(orders).where(eq(orders.id, id)).limit(1);
+
     if (!order) return null;
 
     const items = await db.select({
       id: orderItems.id,
-      orderId: orderItems.orderId,
-      productId: orderItems.productId,
+      order_id: orderItems.orderId,
+      product_id: orderItems.productId,
       quantity: orderItems.quantity,
-      priceAtPurchase: orderItems.priceAtPurchase,
+      price_at_purchase: orderItems.priceAtPurchase,
       product: {
         name: products.name,
       }
@@ -80,16 +86,22 @@ export class OrdersService {
   }
 
   async listByUser(userId: string) {
-    return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
+    return db.select({
+      id: orders.id,
+      user_id: orders.userId,
+      total_amount: orders.totalAmount,
+      status: orders.status,
+      created_at: orders.createdAt,
+    }).from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
   }
 
   async listAll() {
     return db.select({
       id: orders.id,
-      userId: orders.userId,
-      totalAmount: orders.totalAmount,
+      user_id: orders.userId,
+      total_amount: orders.totalAmount,
       status: orders.status,
-      createdAt: orders.createdAt,
+      created_at: orders.createdAt,
       user: {
         email: users.email
       }

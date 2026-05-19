@@ -16,12 +16,16 @@ export class AuthService {
       password: hashedPassword,
       name: data.name,
       address: data.address,
-      phoneNumber: data.phoneNumber,
-      role: data.role,
+      phoneNumber: data.phone_number,
     });
 
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return user!;
+    return {
+      ...user!,
+      phone_number: user!.phoneNumber,
+      created_at: user!.createdAt,
+      updated_at: user!.updatedAt,
+    };
   }
 
   async validateUser(data: LoginBody) {
