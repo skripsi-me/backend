@@ -75,3 +75,21 @@ A `.env` file is required in the root. Refer to `.env.example` for the list of m
   - Schemas: `PascalCase` suffix with `Schema` (e.g., `UserSchema`)
   - Request/Response API: `snake_case`
 - **Security:** Helmet and CORS are enabled globally via plugins in `src/plugins/`.
+
+---
+
+## 🚀 Workflow & Git
+
+### 1. Conventional Commits
+All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation changes
+- `style:` for formatting, missing semi colons, etc; no code change
+- `refactor:` for refactoring production code
+- `test:` for adding missing tests, refactoring tests; no production code change
+- `chore:` for updating build tasks, package manager configs, etc; no production code change
+
+### 2. Automated Commits
+After creating, changing, or deleting any feature or logic, the agent MUST perform a `git commit` with an appropriate conventional commit message. This ensures a clean and traceable history for every incremental improvement.
+

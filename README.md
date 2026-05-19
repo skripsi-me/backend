@@ -138,3 +138,18 @@ Handles product catalog and inventory.
 3. **Database Migration:** `npx drizzle-kit push`
 4. **Dev Server:** `npm run dev`
 5. **Tests:** `npm test`
+
+---
+
+## 🛰️ Git Conventions
+
+This project uses **Conventional Commits** for clear and automated versioning.
+
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation updates
+- `style:` Formatting, missing semi-colons, etc.
+- `refactor:` Production code refactor
+- `test:` Adding or updating tests
+- `chore:` Maintenance tasks
+
