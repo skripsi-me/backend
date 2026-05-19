@@ -1,11 +1,34 @@
 import { db } from '../../config/database.js';
 import { orders, orderItems, cartItems, products, users } from '../../db/schema.js';
-import { eq, sql, desc } from 'drizzle-orm';
+import { eq, sql, desc, and, gte, lte } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { CartsService } from '../carts/carts.service.js';
 
 export class OrdersService {
   private cartsService = new CartsService();
+
+  async getReport(startDate: Date, endDate: Date) {
+    const result = await db.select({
+      date: sql<string>`DATE(${orders.createdAt})`,
+      total_amount: sql<number>`SUM(${orders.totalAmount})`,
+      order_count: sql<number>`COUNT(${orders.id})`,
+    })
+    .from(orders)
+    .where(
+      and(
+        gte(orders.createdAt, startDate),
+        lte(orders.createdAt, endDate)
+      )
+    )
+    .groupBy(sql`DATE(${orders.createdAt})`)
+    .orderBy(sql`DATE(${orders.createdAt})`);
+
+    return result.map(row => ({
+      ...row,
+      total_amount: Number(row.total_amount),
+      order_count: Number(row.order_count),
+    }));
+  }
 
   async createFromCart(userId: string) {
     const cart = await this.cartsService.getByUserId(userId);

@@ -6,7 +6,8 @@ import {
   UpdateOrderStatusSchema,
   CreateOrderSchema,
   ListOrdersSchema,
-  GetOrderSchema
+  GetOrderSchema,
+  GetOrderReportSchema
 } from './orders.schema.js';
 
 export const ordersRoutes = async (fastify: FastifyInstance) => {
@@ -15,6 +16,17 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
   const ordersController = new OrdersController(ordersService);
 
   provider.addHook('onRequest', fastify.authenticate);
+
+  provider.get('/report', {
+    schema: {
+      ...GetOrderReportSchema,
+      tags: ['Orders'],
+      summary: 'Get order report for chart (Admin)',
+      description: 'Returns aggregated order data grouped by date for a given range. Defaults to current month.',
+      security: [{ bearerAuth: [] }]
+    },
+    onRequest: [fastify.adminOnly],
+  }, ordersController.getReport.bind(ordersController));
 
   provider.post('/', { 
     schema: {

@@ -1,10 +1,31 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { OrdersService } from './orders.service.js';
-import { type UpdateOrderStatusBody } from './orders.schema.js';
+import { type UpdateOrderStatusBody, type GetOrderReportQuery } from './orders.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
+
+  async getReport(request: FastifyRequest<{ Querystring: GetOrderReportQuery }>, reply: FastifyReply) {
+    const { start_date, end_date } = request.query;
+
+    let start: Date;
+    let end: Date;
+
+    if (start_date && end_date) {
+      start = new Date(start_date);
+      end = new Date(end_date);
+      end.setHours(23, 59, 59, 999);
+    } else {
+      // Default to this month
+      const now = new Date();
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+
+    const report = await this.ordersService.getReport(start, end);
+    return reply.success(report);
+  }
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     const userId = request.user.id;

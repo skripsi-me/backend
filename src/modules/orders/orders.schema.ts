@@ -59,4 +59,21 @@ export const UpdateOrderStatusSchema = {
   },
 };
 
+export const OrderReportSchema = Type.Object({
+  date: Type.String({ description: 'Date in YYYY-MM-DD format' }),
+  total_amount: Type.Number({ description: 'Total order amount for this date' }),
+  order_count: Type.Number({ description: 'Number of orders for this date' }),
+});
+
+export const GetOrderReportSchema = {
+  query: Type.Object({
+    start_date: Type.Optional(Type.String({ format: 'date', description: 'Start date (YYYY-MM-DD)' })),
+    end_date: Type.Optional(Type.String({ format: 'date', description: 'End date (YYYY-MM-DD)' })),
+  }),
+  response: {
+    200: createStandardResponseSchema(Type.Array(OrderReportSchema)),
+  },
+};
+
 export type UpdateOrderStatusBody = Static<typeof UpdateOrderStatusSchema.body>;
+export type GetOrderReportQuery = Static<typeof GetOrderReportSchema.query>;
