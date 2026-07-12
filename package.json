@@ -3,6 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "test": "vitest",
     "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\""
   },
