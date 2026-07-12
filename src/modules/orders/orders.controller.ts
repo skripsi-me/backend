@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { OrdersService } from './orders.service.js';
-import { type UpdateOrderStatusBody, type GetOrderReportQuery } from './orders.schema.js';
+import { type UpdateOrderStatusBody } from './orders.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 /**
@@ -16,8 +16,8 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with array of report entries
    */
-  async getReport(request: FastifyRequest<{ Querystring: GetOrderReportQuery }>, reply: FastifyReply) {
-    const { start_date, end_date } = request.query;
+  async getReport(request: FastifyRequest, reply: FastifyReply) {
+    const { start_date, end_date } = request.query as { start_date?: string; end_date?: string };
 
     let start: Date;
     let end: Date;
