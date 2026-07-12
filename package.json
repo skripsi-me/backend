@@ -6,6 +6,12 @@
     "test": "vitest",
     "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\""
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "esbuild"
+    ]
+  },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
