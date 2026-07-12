@@ -117,14 +117,94 @@ Scope opsional, menunjukkan modul yang terpengaruh:
 
 ### Naming Convention
 
+Semua penamaan dalam proyek harus konsisten. Berikut konvensi lengkap:
+
+#### TypeScript & Code
+
 | Item | Format | Contoh |
 |------|--------|--------|
-| File | `kebab-case` | `auth.service.ts` |
-| Class | `PascalCase` | `AuthService` |
-| Function | `camelCase` | `getById()` |
-| Variable | `camelCase` | `totalAmount` |
-| DB Column | `snake_case` | `total_amount` |
-| API Response Key | `snake_case` | `total_amount` |
+| File | `kebab-case` | `auth.service.ts`, `response.util.ts` |
+| Class | `PascalCase` | `AuthService`, `ProductsController` |
+| Function / Method | `camelCase` | `getById()`, `createOrder()` |
+| Variable / Property | `camelCase` | `totalAmount`, `userId` |
+| Constant (global) | `SCREAMING_SNAKE_CASE` | `MAX_FILE_SIZE` |
+| Type / Interface | `PascalCase` | `CreateUserBody`, `JwtPayload` |
+| Enum Value | `PascalCase` | `OrderStatus.Pending` |
+
+#### Database (MariaDB via Drizzle)
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Table name | `snake_case` (plural) | `cart_items`, `order_items` |
+| Column name | `snake_case` | `total_amount`, `created_at` |
+| Primary key | `id` | `id` |
+| Foreign key | `<referenced_table_singular>_id` | `user_id`, `product_id` |
+| Index name | `<column>_idx` | `slug_idx`, `name_fulltext_idx` |
+
+> **Catatan:** Drizzle ORM otomatis memetakan `camelCase` (TypeScript) ke `snake_case` (DB). Definisikan kolom di schema dengan `snake_case`:
+> ```typescript
+> export const users = mysqlTable('users', {
+>   phoneNumber: varchar('phone_number', { length: 20 }),
+>   createdAt: timestamp('created_at').defaultNow(),
+> });
+> ```
+
+#### API
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Route path | `kebab-case` | `/api/products/best-sellers` |
+| Route param | `camelCase` | `/:itemId`, `/:categorySlug` |
+| Request body field | `snake_case` | `category_id`, `phone_number` |
+| Response key | `snake_case` | `total_amount`, `created_at` |
+| Query param | `camelCase` | `?categoryId=xxx` |
+
+> **Alasan:** Request body dan response menggunakan `snake_case` karena merupakan konvensi standar REST API yang di-expose ke client. Route param menggunakan `camelCase` karena bersifat internal.
+
+#### TypeBox Schema
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Schema name | `PascalCase` + suffix | `CreateUserBody`, `LoginResponse` |
+| Suffix: request body | `Body` | `CreateProductBody` |
+| Suffix: request params | `Params` | `GetProductParams` |
+| Suffix: request query | `Query` | `ListProductsQuery` |
+| Suffix: response | `Response` | `LoginResponse`, `OrderListResponse` |
+
+```typescript
+// Contoh penamaan schema
+export const CreateOrderBody = Type.Object({...});
+export const GetOrderParams = Type.Object({...});
+export const OrderReportQuery = Type.Object({...});
+export const OrderResponse = Type.Object({...});
+```
+
+#### Environment Variables
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Env variable | `SCREAMING_SNAKE_CASE` | `DATABASE_HOST`, `JWT_SECRET` |
+| Prefix group | `DATABASE_`, `IMAGEKIT_` | `DATABASE_PORT`, `IMAGEKIT_URL_ENDPOINT` |
+
+#### Cookie
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Cookie name | `snake_case` | `token`, `refresh_token` |
+
+#### Error Message
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Error message | Sentence case | `"Email already exists"`, `"Invalid credentials"` |
+| Field error key | `snake_case` (match body field) | `"phone_number": "Invalid phone format"` |
+
+#### Branch & Commit
+
+| Item | Format | Contoh |
+|------|--------|--------|
+| Branch name | `kebab-case` + prefix | `feature/add-wishlist`, `fix/cart-overflow` |
+| Commit scope | `kebab-case` | `feat(auth): ...`, `fix(orders): ...` |
 
 ### Module Pattern
 
