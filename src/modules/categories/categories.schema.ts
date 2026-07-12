@@ -32,7 +32,6 @@ export const GetCategorySchema = {
 export const CreateCategorySchema = {
   body: Type.Object({
     name: Type.String({ minLength: 1, description: 'Category name' }),
-    slug: Type.String({ minLength: 1, description: 'URL-friendly category name' }),
     description: Type.Optional(Type.String({ description: 'Category description' })),
   }),
   response: {
