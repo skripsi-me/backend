@@ -141,7 +141,7 @@ Semua penamaan dalam proyek harus konsisten. Berikut konvensi lengkap:
 | Foreign key | `<referenced_table_singular>_id` | `user_id`, `product_id` |
 | Index name | `<column>_idx` | `slug_idx`, `name_fulltext_idx` |
 
-> **Catatan:** Drizzle ORM otomatis memetakan `camelCase` (TypeScript) ke `snake_case` (DB). Definisikan kolom di schema dengan `snake_case`:
+> **Catatan:** Drizzle ORM memetakan `camelCase` (TypeScript) ke `snake_case` (DB) melalui explicit column name mapping. Definisikan kolom di schema dengan `snake_case`:
 > ```typescript
 > export const users = mysqlTable('users', {
 >   phoneNumber: varchar('phone_number', { length: 20 }),

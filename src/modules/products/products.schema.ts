@@ -59,7 +59,7 @@ export const GetProductBySlugSchema = {
 /** Schema for listing products by category slug with pagination */
 export const ListProductsByCategorySchema = {
   params: Type.Object({
-    category_slug: Type.String({ description: 'Category slug' }),
+    categorySlug: Type.String({ description: 'Category slug' }),
   }),
   query: Type.Object({
     page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),

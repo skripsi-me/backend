@@ -38,6 +38,7 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 ## Known Limitations
 
 - Cookie-based auth tidak mendukung perangkat mobile native (perlu adaptasi Bearer token)
+- Swagger UI menampilkan `bearerAuth` sebagai opsi, namun implementasi hanya mendukung cookie-based auth
 - CSRF protection mengandalkan `sameSite: 'strict'` (belum ada double-submit cookie)
 - Rate limiting menggunakan in-memory store (tidak distributed)
 - Tidak ada brute-force protection pada login endpoint

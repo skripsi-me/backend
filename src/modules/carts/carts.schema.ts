@@ -42,7 +42,7 @@ export const AddToCartSchema = {
 /** Schema for updating cart item quantity */
 export const UpdateCartItemSchema = {
   params: Type.Object({
-    item_id: Type.String({ description: 'Cart item ULID' }),
+    itemId: Type.String({ description: 'Cart item ULID' }),
   }),
   body: Type.Object({
     quantity: Type.Number({ minimum: 1, description: 'New quantity' }),
@@ -55,7 +55,7 @@ export const UpdateCartItemSchema = {
 /** Schema for removing an item from the cart */
 export const RemoveCartItemSchema = {
   params: Type.Object({
-    item_id: Type.String({ description: 'Cart item ULID' }),
+    itemId: Type.String({ description: 'Cart item ULID' }),
   }),
   response: {
     200: createStandardResponseSchema(CartSchema),

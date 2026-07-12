@@ -39,9 +39,9 @@ export class CartsController {
    * @param reply - Fastify reply
    * @returns 200 with updated cart
    */
-  async updateItem(request: FastifyRequest<{ Params: { item_id: string }; Body: UpdateCartItemBody }>, reply: FastifyReply) {
+  async updateItem(request: FastifyRequest<{ Params: { itemId: string }; Body: UpdateCartItemBody }>, reply: FastifyReply) {
     const userId = request.user.id;
-    const cart = await this.cartsService.updateItem(userId, request.params.item_id, request.body);
+    const cart = await this.cartsService.updateItem(userId, request.params.itemId, request.body);
     return reply.success(cart);
   }
 
@@ -51,9 +51,9 @@ export class CartsController {
    * @param reply - Fastify reply
    * @returns 200 with updated cart
    */
-  async removeItem(request: FastifyRequest<{ Params: { item_id: string } }>, reply: FastifyReply) {
+  async removeItem(request: FastifyRequest<{ Params: { itemId: string } }>, reply: FastifyReply) {
     const userId = request.user.id;
-    const cart = await this.cartsService.removeItem(userId, request.params.item_id);
+    const cart = await this.cartsService.removeItem(userId, request.params.itemId);
     return reply.success(cart);
   }
 }

@@ -45,7 +45,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
   },
   "error": {
     "email": "Invalid email format",
-    "password": "String must have at least 6 characters"
+    "password": "String must have at least 8 characters"
   }
 }
 ```
@@ -131,11 +131,11 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
   "password": "securePassword123",
   "name": "John Doe",
   "address": "123 Street Name",
-  "phoneNumber": "08123456789"
+  "phone_number": "08123456789"
 }
 ```
 
-> `address` dan `phoneNumber` bersifat opsional.
+> `address` dan `phone_number` bersifat opsional.
 
 **Response (201 Created):**
 ```json
@@ -232,7 +232,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 ### Logout
 
 `POST /api/auth/logout`
-*Membutuhkan autentikasi*
+*Public*
 
 **Response (200 OK):**
 ```json
@@ -286,7 +286,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 {
   "name": "John Updated",
   "address": "456 New Street",
-  "phoneNumber": "08987654321"
+  "phone_number": "08987654321"
 }
 ```
 
@@ -592,18 +592,8 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `DELETE /api/categories/:id`
 *Membutuhkan role admin*
 
-**Response (200 OK):**
-```json
-{
-  "metadata": {
-    "code": 200,
-    "message": "Success"
-  },
-  "data": {
-    "success": true
-  }
-}
-```
+**Response (204 No Content):**
+> Tidak ada body response.
 
 ---
 
@@ -849,18 +839,8 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `DELETE /api/products/:id`
 *Membutuhkan role admin*
 
-**Response (200 OK):**
-```json
-{
-  "metadata": {
-    "code": 200,
-    "message": "Success"
-  },
-  "data": {
-    "success": true
-  }
-}
-```
+**Response (204 No Content):**
+> Tidak ada body response.
 
 ---
 
@@ -1147,7 +1127,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
-> Nilai status: `pending`, `processing`, `shipped`, `delivered`, `cancelled`
+> Nilai status: `pending`, `shipped`, `delivered`, `cancelled`
 
 **Response (200 OK):**
 ```json

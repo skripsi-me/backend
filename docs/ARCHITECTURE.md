@@ -144,20 +144,22 @@ graph LR
 graph TB
     subgraph Routes
         R1[GET / - List]
-        R2[GET /:id - Get by ID]
-        R3[GET /slug/:slug - Get by Slug]
-        R4[POST / - Create]
-        R5[PUT /:id - Update]
-        R6[DELETE /:id - Delete]
+        R2[GET /best-sellers]
+        R3[GET /:id - Get by ID]
+        R4[GET /slug/:slug - Get by Slug]
+        R5[GET /category/:categorySlug]
+        R6[POST / - Create]
+        R7[PUT /:id - Update]
+        R8[DELETE /:id - Delete]
     end
     
     subgraph Auth
         Admin[adminOnly]
     end
     
-    R4 --> Admin
-    R5 --> Admin
     R6 --> Admin
+    R7 --> Admin
+    R8 --> Admin
     
     subgraph Controller
         C[ProductsController]
@@ -167,8 +169,8 @@ graph TB
         S[ProductsService]
     end
     
-    R1 & R2 & R3 --> C
-    R4 & R5 & R6 --> C
+    R1 & R2 & R3 & R4 & R5 --> C
+    R6 & R7 & R8 --> C
     C --> S
     S --> DB[(MariaDB)]
     S -.-> IK[ImageKit]
@@ -199,8 +201,8 @@ sequenceDiagram
 
 | Guard | Fungsi | Dipakai di |
 |-------|--------|-----------|
-| `authenticate` | Verifikasi JWT dari cookie | Carts, Orders, Users (profile) |
-| `adminOnly` | `authenticate` + cek `role === 'admin'` | Products (CRUD), Users (admin) |
+| `authenticate` | Verifikasi JWT dari cookie | Auth (change-password), Carts, Orders, Users (profile) |
+| `adminOnly` | `authenticate` + cek `role === 'admin'` | Products (CRUD), Users (admin), Categories (write), Orders (admin) |
 
 ### Token Structure
 
@@ -366,6 +368,7 @@ Divalidasi otomatis saat startup menggunakan TypeBox. Lihat `src/config/env.ts`.
 | DATABASE_USER | Yes | - | Username DB |
 | DATABASE_PASSWORD | Yes | - | Password DB |
 | DATABASE_NAME | Yes | - | Nama database |
+| DATABASE_ROOT_PASSWORD | No | root_sandi_skripsi_aman | Root password MariaDB (Docker) |
 | JWT_SECRET | Yes | - | Secret key JWT |
 | COOKIE_SECRET | Yes | - | Secret key cookies |
 | IMAGEKIT_PUBLIC_KEY | Yes | - | ImageKit public key |

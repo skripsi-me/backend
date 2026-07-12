@@ -38,7 +38,7 @@ Routes register at prefixes defined in `src/app.ts` (e.g., `/api/auth`, `/api/pr
 - **Response format:** `formatSuccess()` / `formatError()` from `src/shared/utils/response.util.ts`. All responses wrapped in `{ metadata: { code, message }, data, error? }`.
 - **Imports:** Use `.js` extensions in all imports (required by `nodenext` module resolution).
 - **Type imports:** ESLint enforces `import type { ... }` with inline-style.
-- **DB column casing:** Drizzle maps camelCase TS fields to snake_case DB columns automatically.
+- **DB column casing:** Drizzle schema uses explicit column name mapping (e.g., `phoneNumber: varchar('phone_number', ...)`). The DB columns are `snake_case`, TS properties are `camelCase`.
 
 ## Testing
 
