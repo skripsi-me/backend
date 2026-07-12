@@ -2,6 +2,7 @@ import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 import { UserSchema } from '../users/user.schema.js';
 
+/** Schema for user registration request body */
 export const RegisterSchema = {
   body: Type.Object({
     email: Type.String({ format: 'email', description: 'User email address' }),
@@ -16,6 +17,7 @@ export const RegisterSchema = {
   },
 };
 
+/** Schema for user login request body */
 export const LoginSchema = {
   body: Type.Object({
     email: Type.String({ format: 'email', description: 'User email address' }),
@@ -28,6 +30,7 @@ export const LoginSchema = {
   },
 };
 
+/** Schema for change password request body */
 export const ChangePasswordSchema = {
   body: Type.Object({
     old_password: Type.String({ description: 'Current password' }),
@@ -40,6 +43,7 @@ export const ChangePasswordSchema = {
   },
 };
 
+/** Schema for token refresh response (no body required) */
 export const RefreshTokenSchema = {
   response: {
     200: createStandardResponseSchema(Type.Object({
@@ -48,6 +52,7 @@ export const RefreshTokenSchema = {
   },
 };
 
+/** Schema for logout response (clears cookies) */
 export const LogoutSchema = {
   response: {
     200: createStandardResponseSchema(Type.Object({
@@ -56,6 +61,9 @@ export const LogoutSchema = {
   },
 };
 
+/** TypeScript type for register request body */
 export type RegisterBody = Static<typeof RegisterSchema.body>;
+/** TypeScript type for login request body */
 export type LoginBody = Static<typeof LoginSchema.body>;
+/** TypeScript type for change password request body */
 export type ChangePasswordBody = Static<typeof ChangePasswordSchema.body>;

@@ -3,9 +3,19 @@ import { OrdersService } from './orders.service.js';
 import { type UpdateOrderStatusBody, type GetOrderReportQuery } from './orders.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
+/**
+ * Controller for order management endpoints.
+ * Handles order creation, listing, status updates, and reporting.
+ */
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
+  /**
+   * Get order report by date range (admin only).
+   * @param request - Fastify request with optional start_date and end_date query
+   * @param reply - Fastify reply
+   * @returns 200 with array of report entries
+   */
   async getReport(request: FastifyRequest<{ Querystring: GetOrderReportQuery }>, reply: FastifyReply) {
     const { start_date, end_date } = request.query;
 
@@ -27,6 +37,12 @@ export class OrdersController {
     return reply.success(report);
   }
 
+  /**
+   * Create order from cart items (checkout).
+   * @param request - Fastify request (uses request.user.id)
+   * @param reply - Fastify reply
+   * @returns 201 with created order or 400 if cart is empty
+   */
   async create(request: FastifyRequest, reply: FastifyReply) {
     const userId = request.user.id;
     try {
@@ -38,12 +54,24 @@ export class OrdersController {
     }
   }
 
+  /**
+   * List orders for the authenticated user.
+   * @param request - Fastify request (uses request.user.id)
+   * @param reply - Fastify reply
+   * @returns 200 with array of orders
+   */
   async listMine(request: FastifyRequest, reply: FastifyReply) {
     const userId = request.user.id;
     const orders = await this.ordersService.listByUser(userId);
     return reply.success(orders);
   }
 
+  /**
+   * Get order by ID. Users can only see their own orders; admins can see all.
+   * @param request - Fastify request with order ID param
+   * @param reply - Fastify reply
+   * @returns 200 with order or 404 if not found or 403 if forbidden
+   */
   async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const { id: userId, role } = request.user;
     const order = await this.ordersService.getById(request.params.id);
@@ -59,11 +87,23 @@ export class OrdersController {
     return reply.success(order);
   }
 
+  /**
+   * List all orders with user info (admin only).
+   * @param request - Fastify request
+   * @param reply - Fastify reply
+   * @returns 200 with array of orders
+   */
   async listAll(_request: FastifyRequest, reply: FastifyReply) {
     const orders = await this.ordersService.listAll();
     return reply.success(orders);
   }
 
+  /**
+   * Update order status (admin only).
+   * @param request - Fastify request with order ID and UpdateOrderStatusBody
+   * @param reply - Fastify reply
+   * @returns 200 with updated order
+   */
   async updateStatus(request: FastifyRequest<{ Params: { id: string }; Body: UpdateOrderStatusBody }>, reply: FastifyReply) {
     const order = await this.ordersService.updateStatus(request.params.id, request.body.status);
     return reply.success(order);

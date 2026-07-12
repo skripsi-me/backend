@@ -1,6 +1,7 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
+/** Base schema for product object */
 export const ProductSchema = Type.Object({
   id: Type.String({ description: 'Product ULID' }),
   category_id: Type.Union([Type.String(), Type.Null()], { description: 'Category ULID' }),
@@ -14,6 +15,7 @@ export const ProductSchema = Type.Object({
   updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
 
+/** Schema for listing products with pagination, search, and category filter */
 export const ListProductsSchema = {
   query: Type.Object({
     page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
@@ -34,6 +36,7 @@ export const ListProductsSchema = {
   },
 };
 
+/** Schema for getting a single product by ID (admin only) */
 export const GetProductSchema = {
   params: Type.Object({
     id: Type.String({ description: 'Product ULID' }),
@@ -43,6 +46,7 @@ export const GetProductSchema = {
   },
 };
 
+/** Schema for getting a single product by slug (public) */
 export const GetProductBySlugSchema = {
   params: Type.Object({
     slug: Type.String({ description: 'Product slug' }),
@@ -52,6 +56,7 @@ export const GetProductBySlugSchema = {
   },
 };
 
+/** Schema for listing products by category slug with pagination */
 export const ListProductsByCategorySchema = {
   params: Type.Object({
     category_slug: Type.String({ description: 'Category slug' }),
@@ -73,6 +78,7 @@ export const ListProductsByCategorySchema = {
   },
 };
 
+/** Schema for creating a new product (admin only, multipart/form-data) */
 export const CreateProductSchema = {
   // Multipart body validation is handled in controller
   response: {
@@ -80,6 +86,7 @@ export const CreateProductSchema = {
   },
 };
 
+/** Schema for updating a product by ID (admin only, multipart/form-data) */
 export const UpdateProductSchema = {
   params: Type.Object({
     id: Type.String({ description: 'Product ULID' }),
@@ -89,6 +96,7 @@ export const UpdateProductSchema = {
   },
 };
 
+/** Schema for deleting a product by ID (admin only) */
 export const DeleteProductSchema = {
   params: Type.Object({
     id: Type.String({ description: 'Product ULID' }),
@@ -98,6 +106,7 @@ export const DeleteProductSchema = {
   },
 };
 
+/** Schema for best seller product (extends ProductSchema with total_sold) */
 export const BestSellerProductSchema = Type.Intersect([
   ProductSchema,
   Type.Object({
@@ -105,6 +114,7 @@ export const BestSellerProductSchema = Type.Intersect([
   })
 ]);
 
+/** Schema for getting best seller products */
 export const GetBestSellersSchema = {
   query: Type.Object({
     limit: Type.Optional(Type.Number({ minimum: 1, maximum: 50, default: 5, description: 'Number of products to show' })),
@@ -114,6 +124,9 @@ export const GetBestSellersSchema = {
   },
 };
 
+/** TypeScript type for list products query parameters */
 export type ListProductsQuery = Static<typeof ListProductsSchema.query>;
+/** TypeScript type for product object */
 export type Product = Static<typeof ProductSchema>;
+/** TypeScript type for best sellers query parameters */
 export type GetBestSellersQuery = Static<typeof GetBestSellersSchema.query>;

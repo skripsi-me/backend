@@ -1,0 +1,113 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    // Model default: MiMo V2.5 dari Xiaomi
+    "model": "opencode/mimo-v2.5-free",
+    "lsp": true,
+    "autoupdate": true,
+    // File-file ini akan dibaca sebagai "source of truth" oleh AI agent
+    "instructions": [
+        "AGENTS.md",
+        "docs/api-guidelines.md",
+        "docs/database-schema.md",
+        "src/db/schema/**/*.ts"
+    ],
+    "mcp": {
+        "mysql": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@f4ww4z/mcp-mysql-server",
+                "mysql://khoican:basmalah123@localhost:3307/skripsi_db"
+            ],
+            "enabled": true
+        },
+        "github": {
+            "type": "http",
+            "url": "https://api.githubcopilot.com/mcp/",
+            "enabled": true
+        },
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/home/khoican/project/skripsi/backend"
+            ],
+            "enabled": true
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ],
+            "enabled": true
+        },
+        "memory": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "-v",
+                "claude-memory:/app/dist",
+                "--rm",
+                "mcp/memory"
+            ],
+            "enabled": true
+        },
+        "fetch": {
+            "command": "npx",
+            "args": [
+                "mcp-fetch-server"
+            ],
+            "enabled": true
+        }
+    },
+    // Kontrol izin agar AI tidak menjalankan perintah berbahaya tanpa konfirmasi
+    "permission": {
+        "edit": "allow",
+        "bash": {
+            "*": "ask",
+            "npm run dev*": "allow",
+            "npm run build*": "allow",
+            "npm run test*": "allow",
+            "npm run lint*": "allow",
+            "npx drizzle-kit generate*": "allow",
+            "npx drizzle-kit check*": "allow",
+            "npx drizzle-kit studio*": "ask",
+            "npx drizzle-kit migrate*": "ask",
+            "npx drizzle-kit push*": "ask",
+            "git add*": "allow",
+            "git commit*": "allow",
+            "git push*": "ask",
+            "rm -rf*": "deny",
+            "*DROP DATABASE*": "deny",
+            "*DROP TABLE*": "deny",
+            "*TRUNCATE*": "deny",
+            "sudo*": "deny"
+        }
+    },
+    // Custom agent tambahan di luar agent bawaan (build, plan)
+    "agent": {
+        "db-schema": {
+            "description": "Agent khusus untuk mengelola schema Drizzle ORM dan migration MySQL. Fokus pada type safety dan konsistensi schema.",
+            "model": "mimo/mimo-v2.5-pro",
+            "prompt": "Kamu adalah spesialis Drizzle ORM dengan MySQL. Selalu pastikan schema type-safe, gunakan drizzle-kit untuk generate migration, dan jangan pernah menjalankan migration langsung ke production tanpa konfirmasi eksplisit dari user. Ikuti konvensi penamaan tabel dan kolom yang sudah ada di project.",
+            "tools": {
+                "write": true,
+                "edit": true,
+                "bash": true
+            }
+        },
+        "api-reviewer": {
+            "description": "Review endpoint Fastify untuk validasi, error handling, dan konsistensi response format. Read-only, tidak mengubah kode.",
+            "model": "mimo/mimo-v2.5",
+            "prompt": "Kamu adalah code reviewer untuk REST API berbasis Fastify + TypeScript. Fokus review pada: skema validasi request/response (misal pakai zod atau TypeBox), error handling, status code yang tepat, dan konsistensi struktur response JSON. Jangan mengubah file, cukup berikan feedback.",
+            "tools": {
+                "write": false,
+                "edit": false
+            }
+        }
+    },
+    "share": "manual"
+}

@@ -1,6 +1,7 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
+/** Schema for a single cart item */
 export const CartItemSchema = Type.Object({
   id: Type.String({ description: 'Cart item ULID' }),
   cart_id: Type.String({ description: 'Cart ULID' }),
@@ -13,18 +14,21 @@ export const CartItemSchema = Type.Object({
   })),
 });
 
+/** Schema for cart with items */
 export const CartSchema = Type.Object({
   id: Type.String({ description: 'Cart ULID' }),
   user_id: Type.String({ description: 'User ULID' }),
   items: Type.Array(CartItemSchema, { description: 'List of items in the cart' }),
 });
 
+/** Schema for getting the authenticated user's cart */
 export const GetCartSchema = {
   response: {
     200: createStandardResponseSchema(CartSchema),
   },
 };
 
+/** Schema for adding an item to the cart */
 export const AddToCartSchema = {
   body: Type.Object({
     product_id: Type.String({ description: 'Product ULID to add' }),
@@ -35,6 +39,7 @@ export const AddToCartSchema = {
   },
 };
 
+/** Schema for updating cart item quantity */
 export const UpdateCartItemSchema = {
   params: Type.Object({
     item_id: Type.String({ description: 'Cart item ULID' }),
@@ -47,6 +52,7 @@ export const UpdateCartItemSchema = {
   },
 };
 
+/** Schema for removing an item from the cart */
 export const RemoveCartItemSchema = {
   params: Type.Object({
     item_id: Type.String({ description: 'Cart item ULID' }),
@@ -56,6 +62,9 @@ export const RemoveCartItemSchema = {
   },
 };
 
+/** TypeScript type for add to cart request body */
 export type AddToCartBody = Static<typeof AddToCartSchema.body>;
+/** TypeScript type for update cart item request body */
 export type UpdateCartItemBody = Static<typeof UpdateCartItemSchema.body>;
+/** TypeScript type for cart object */
 export type Cart = Static<typeof CartSchema>;

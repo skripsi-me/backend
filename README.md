@@ -1,155 +1,201 @@
-# Backend E-Commerce API (Fastify + Drizzle)
+# Backend E-Commerce API
 
-A high-performance, secure backend for an e-commerce platform built with Node.js, Fastify, and Drizzle ORM.
+Backend API untuk aplikasi e-commerce yang dibangun dengan Fastify 5, Drizzle ORM, dan MariaDB.
 
-## 🚀 Technical Specifications
+## Spesifikasi Teknis
 
-- **Framework:** Fastify (Node.js 20+)
-- **Database:** MySQL (InnoDB) with Drizzle ORM
-- **Authentication:** JWT + HttpOnly Cookies (Signed)
-- **Validation:** TypeBox (AJV)
-- **Primary Keys:** ULID (26 characters)
-- **Media Storage:** ImageKit.io SDK
-- **Rate Limit:** 20 RPS per IP
+| Komponen | Teknologi |
+|----------|-----------|
+| Framework | Fastify 5 (Node.js ESM) |
+| Database | MariaDB LTS (via Docker) |
+| ORM | Drizzle ORM (MySQL dialect) |
+| Validasi | TypeBox (AJV) |
+| Autentikasi | JWT + HttpOnly Cookies (Signed) |
+| ID | ULID (26 karakter) |
+| Media | ImageKit.io SDK |
+| Rate Limit | 20 request/detik per IP |
+| API Docs | Swagger UI (`/docs`) |
 
-## 📦 Standard Response Format
+## Format Response Standar
 
-All API responses follow a consistent structure:
+Semua response API mengikuti format konsisten:
 
 ```json
 {
   "metadata": {
-    "code": number,
-    "message": string
+    "code": 200,
+    "message": "Success"
   },
-  "data": object | array | null,
-  "error": {
-    "field_name": "validation error message"
-  } // Only present on errors
+  "data": {},
+  "error": {}
 }
 ```
 
----
+- `data` berisi hasil operasi (hanya ada saat sukses)
+- `error` berisi error per field (hanya ada saat error validasi)
 
-## 🔐 Auth Module
-Handles registration, session management, and security.
+## Endpoint API
 
-### Register
-`POST /api/auth/register`
+### Auth (`/api/auth`)
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "Full Name",
-  "address": "Street Address (Optional)",
-  "phoneNumber": "0812345678 (Optional)"
-}
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| POST | `/register` | Public | Registrasi akun baru |
+| POST | `/login` | Public | Login, mengatur cookie JWT |
+| POST | `/refresh` | Public | Refresh access token |
+| POST | `/logout` | Public | Logout, menghapus cookie |
+| POST | `/change-password` | Authenticated | Ubah password |
+
+### Users (`/api/users`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| GET | `/me` | Authenticated | Lihat profil sendiri |
+| PATCH | `/me` | Authenticated | Update profil sendiri |
+| GET | `/` | Admin | List semua user |
+| GET | `/:id` | Admin | Lihat detail user |
+| POST | `/` | Admin | Buat user baru |
+| PATCH | `/:id` | Admin | Update user |
+| DELETE | `/:id` | Admin | Hapus user |
+
+### Categories (`/api/categories`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| GET | `/` | Public | List semua kategori |
+| GET | `/:id` | Admin | Lihat detail kategori |
+| POST | `/` | Admin | Buat kategori baru |
+| PUT | `/:id` | Admin | Update kategori |
+| DELETE | `/:id` | Admin | Hapus kategori |
+
+### Products (`/api/products`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| GET | `/` | Public | List produk (paginated, search, filter) |
+| GET | `/best-sellers` | Public | Produk terlaris |
+| GET | `/slug/:slug` | Public | Detail produk berdasarkan slug |
+| GET | `/category/:categorySlug` | Public | List produk per kategori |
+| GET | `/:id` | Admin | Detail produk berdasarkan ID |
+| POST | `/` | Admin | Buat produk baru (multipart/form-data) |
+| PUT | `/:id` | Admin | Update produk |
+| DELETE | `/:id` | Admin | Hapus produk |
+
+### Carts (`/api/carts`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| GET | `/` | Authenticated | Lihat keranjang |
+| POST | `/items` | Authenticated | Tambah item ke keranjang |
+| PUT | `/items/:itemId` | Authenticated | Update jumlah item |
+| DELETE | `/items/:itemId` | Authenticated | Hapus item dari keranjang |
+
+### Orders (`/api/orders`)
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| POST | `/` | Authenticated | Checkout (buat pesanan dari keranjang) |
+| GET | `/me` | Authenticated | List pesanan sendiri |
+| GET | `/:id` | Authenticated | Detail pesanan |
+| GET | `/` | Admin | List semua pesanan |
+| GET | `/report` | Admin | Laporan pesanan |
+| PATCH | `/:id/status` | Admin | Update status pesanan |
+
+### Health Check
+
+| Method | Endpoint | Auth | Deskripsi |
+|--------|----------|------|-----------|
+| GET | `/health` | Public | Cek status server |
+
+## Setup Development
+
+### Prasyarat
+
+- Node.js 20+
+- pnpm
+- Docker & Docker Compose
+
+### Instalasi
+
+```bash
+# 1. Clone repository
+git clone <url>
+cd backend
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Setup environment
+cp .env.example .env
+# Edit .env sesuai kebutuhan (lihat docs/ENVIRONMENT.md)
+
+# 4. Jalankan MariaDB
+docker compose up -d
+
+# 5. Sinkronisasi schema ke database
+npx drizzle-kit push
+
+# 6. Setup FULLTEXT index (untuk pencarian produk)
+node scripts/setup-fulltext.js
+
+# 7. Jalankan development server
+npm run dev
 ```
 
-### Login
-`POST /api/auth/login`
-Sets `token` and `refreshToken` in HttpOnly cookies.
+Server akan berjalan di `http://localhost:3000`. Swagger UI tersedia di `http://localhost:3000/docs`.
 
-### Refresh Token
-`POST /api/auth/refresh`
-Uses `refreshToken` cookie to issue a new access `token`.
+### Commands
 
-### Change Password
-`POST /api/auth/change-password`
-*Requires Authentication*
+| Command | Deskripsi |
+|---------|-----------|
+| `npm run dev` | Development server dengan hot reload |
+| `npm run build` | Compile TypeScript ke `dist/` |
+| `npm run start` | Jalankan production build |
+| `npm test` | Jalankan integration test |
+| `npm run lint:fix` | Format code dengan ESLint + Prettier |
+| `npx drizzle-kit push` | Sinkronisasi schema ke database |
 
----
+### Testing
 
-## 👤 User Module
-Handles user profiles and administrative management.
+```bash
+# Jalankan semua test
+npm test
 
-### Get My Profile
-`GET /api/users/me`
-*Requires Authentication*
+# Jalankan test modul tertentu
+npx vitest src/modules/products/tests/products.test.ts
+```
 
-### Update My Profile
-`PATCH /api/users/me`
-*Requires Authentication*
+> **Catatan:** Test membutuhkan MariaDB yang berjalan. Test menggunakan `app.inject()` (bukan HTTP request nyata) dan membersihkan data test secara otomatis.
 
-### Admin: List All Users
-`GET /api/users`
-*Requires Admin Role*
+## Produksi
 
----
+```bash
+# Build
+npm run build
 
-## 📁 Categories
-Product categorization and organization.
+# Jalankan
+npm run start
+```
 
-### List Categories
-`GET /api/categories`
-*Public*
+Pastikan environment variables di生产 sudah dikonfigurasi dengan benar (lihat `docs/ENVIRONMENT.md`).
 
-### Admin: Create Category
-`POST /api/categories`
-*Requires Admin Role*
-Fields: `name`, `slug`, `description`.
+## Dokumentasi Lainnya
 
----
+- `docs/ARCHITECTURE.md` — Arsitektur dan desain sistem
+- `docs/ENVIRONMENT.md` — Konfigurasi environment variables
+- `docs/RESPONSE.md` — Contoh request/response API
+- `http://localhost:3000/docs` — Swagger UI (otomatis)
 
-## 🏷️ Products
-Handles product catalog and inventory.
+## Konvensi Git
 
-### List All Products
-`GET /api/products`
-*Public*
+Proyek ini menggunakan **Conventional Commits**:
 
-### Get Product by Slug
-`GET /api/products/slug/:slug`
-*Public*
-
-### List Products by Category
-`GET /api/products/category/:categorySlug`
-*Public*
-
-### Admin: Create Product
-`POST /api/products`
-*Requires Admin Role. Content-Type: multipart/form-data.*
-
----
-
-## 🛒 Shopping Cart
-*Requires Authentication*
-
-### Get Cart
-`GET /api/carts`
-
----
-
-## 📦 Orders
-*Requires Authentication*
-
-### Checkout (Create Order)
-`POST /api/orders`
-*Converts cart items into an order.*
-
----
-
-## 🛠️ Development
-
-1. **Setup Env:** `cp .env.example .env`
-2. **Install:** `npm install`
-3. **Database Migration:** `npx drizzle-kit push`
-4. **Dev Server:** `npm run dev`
-5. **Tests:** `npm test`
-
----
-
-## 🛰️ Git Conventions
-
-This project uses **Conventional Commits** for clear and automated versioning.
-
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation updates
-- `style:` Formatting, missing semi-colons, etc.
-- `refactor:` Production code refactor
-- `test:` Adding or updating tests
-- `chore:` Maintenance tasks
-
+| Prefix | Keterangan |
+|--------|------------|
+| `feat:` | Fitur baru |
+| `fix:` | Perbaikan bug |
+| `docs:` | Perubahan dokumentasi |
+| `style:` | Format kode |
+| `refactor:` | Refaktor kode |
+| `test:` | Penambahan/pembaruan test |
+| `chore:` | Tugas pemeliharaan |

@@ -4,7 +4,16 @@ import { eq, and } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { type AddToCartBody, type UpdateCartItemBody, type Cart } from './carts.schema.js';
 
+/**
+ * Service for shopping cart operations.
+ * Handles cart retrieval, item management, and cart clearing.
+ */
 export class CartsService {
+  /**
+   * Get cart by user ID. Creates a new cart if none exists.
+   * @param userId - User ULID
+   * @returns Cart object with items and product details
+   */
   async getByUserId(userId: string): Promise<Cart> {
     const [cartData] = await db.select({
       id: carts.id,
@@ -38,6 +47,12 @@ export class CartsService {
     };
   }
 
+  /**
+   * Add item to cart. If product already exists, increments quantity.
+   * @param userId - User ULID
+   * @param data - Cart item data (product_id, quantity)
+   * @returns Updated cart with items
+   */
   async addItem(userId: string, data: AddToCartBody) {
     const cart = await this.getByUserId(userId);
     
@@ -63,6 +78,13 @@ export class CartsService {
     return this.getByUserId(userId);
   }
 
+  /**
+   * Update cart item quantity.
+   * @param userId - User ULID
+   * @param itemId - Cart item ULID
+   * @param data - New quantity
+   * @returns Updated cart with items
+   */
   async updateItem(userId: string, itemId: string, data: UpdateCartItemBody) {
     const cart = await this.getByUserId(userId);
     
@@ -73,6 +95,12 @@ export class CartsService {
     return this.getByUserId(userId);
   }
 
+  /**
+   * Remove item from cart.
+   * @param userId - User ULID
+   * @param itemId - Cart item ULID
+   * @returns Updated cart with items
+   */
   async removeItem(userId: string, itemId: string) {
     const cart = await this.getByUserId(userId);
     
@@ -82,6 +110,10 @@ export class CartsService {
     return this.getByUserId(userId);
   }
 
+  /**
+   * Clear all items from cart.
+   * @param userId - User ULID
+   */
   async clearCart(userId: string) {
     const cart = await this.getByUserId(userId);
     await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));

@@ -1,6 +1,7 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
+/** Base schema for user object */
 export const UserSchema = Type.Object({
   id: Type.String({ description: 'Unique user identifier (ULID)' }),
   email: Type.String({ format: 'email', description: 'User email address' }),
@@ -10,12 +11,14 @@ export const UserSchema = Type.Object({
   role: Type.String({ description: 'User role (user, admin)' }),
 });
 
+/** Schema for listing all users (admin only) */
 export const GetUsersSchema = {
   response: {
     200: createStandardResponseSchema(Type.Array(UserSchema)),
   },
 };
 
+/** Schema for getting a single user by ID (admin only) */
 export const GetUserSchema = {
   params: Type.Object({
     id: Type.String({ description: 'User ULID' }),
@@ -25,12 +28,14 @@ export const GetUserSchema = {
   },
 };
 
+/** Schema for getting the authenticated user's profile */
 export const GetProfileSchema = {
   response: {
     200: createStandardResponseSchema(UserSchema),
   },
 };
 
+/** Schema for creating a new user (admin only) */
 export const CreateUserSchema = {
   body: Type.Object({
     email: Type.String({ format: 'email', description: 'User email address' }),
@@ -45,6 +50,7 @@ export const CreateUserSchema = {
   },
 };
 
+/** Schema for updating a user by ID (admin only) */
 export const UpdateUserSchema = {
   params: Type.Object({
     id: Type.String({ description: 'User ULID' }),
@@ -62,6 +68,7 @@ export const UpdateUserSchema = {
   },
 };
 
+/** Schema for updating the authenticated user's profile */
 export const UpdateProfileSchema = {
   body: Type.Object({
     name: Type.Optional(Type.String({ minLength: 1, description: 'User full name' })),
@@ -73,6 +80,7 @@ export const UpdateProfileSchema = {
   },
 };
 
+/** Schema for deleting a user by ID (admin only) */
 export const DeleteUserSchema = {
   params: Type.Object({
     id: Type.String({ description: 'User ULID' }),
@@ -82,7 +90,11 @@ export const DeleteUserSchema = {
   },
 };
 
+/** TypeScript type for create user request body */
 export type CreateUserBody = Static<typeof CreateUserSchema.body>;
+/** TypeScript type for update user request body */
 export type UpdateUserBody = Static<typeof UpdateUserSchema.body>;
+/** TypeScript type for update profile request body */
 export type UpdateProfileBody = Static<typeof UpdateProfileSchema.body>;
+/** TypeScript type for user object */
 export type User = Static<typeof UserSchema>;

@@ -1,6 +1,7 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
+/** Base schema for category object */
 export const CategorySchema = Type.Object({
   id: Type.String({ description: 'Category ULID' }),
   name: Type.String({ description: 'Category name' }),
@@ -10,12 +11,14 @@ export const CategorySchema = Type.Object({
   updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
 
+/** Schema for listing all categories */
 export const GetCategoriesSchema = {
   response: {
     200: createStandardResponseSchema(Type.Array(CategorySchema)),
   },
 };
 
+/** Schema for getting a single category by ID (admin only) */
 export const GetCategorySchema = {
   params: Type.Object({
     id: Type.String({ description: 'Category ULID' }),
@@ -25,6 +28,7 @@ export const GetCategorySchema = {
   },
 };
 
+/** Schema for creating a new category (admin only) */
 export const CreateCategorySchema = {
   body: Type.Object({
     name: Type.String({ minLength: 1, description: 'Category name' }),
@@ -36,6 +40,7 @@ export const CreateCategorySchema = {
   },
 };
 
+/** Schema for updating a category by ID (admin only) */
 export const UpdateCategorySchema = {
   params: Type.Object({
     id: Type.String({ description: 'Category ULID' }),
@@ -50,6 +55,7 @@ export const UpdateCategorySchema = {
   },
 };
 
+/** Schema for deleting a category by ID (admin only) */
 export const DeleteCategorySchema = {
   params: Type.Object({
     id: Type.String({ description: 'Category ULID' }),
@@ -59,5 +65,7 @@ export const DeleteCategorySchema = {
   },
 };
 
+/** TypeScript type for create category request body */
 export type CreateCategoryBody = Static<typeof CreateCategorySchema.body>;
+/** TypeScript type for update category request body */
 export type UpdateCategoryBody = Static<typeof UpdateCategorySchema.body>;

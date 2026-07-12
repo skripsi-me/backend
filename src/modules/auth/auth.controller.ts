@@ -3,14 +3,30 @@ import { AuthService } from './auth.service.js';
 import { type RegisterBody, type LoginBody, type ChangePasswordBody } from './auth.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
+/**
+ * Controller for authentication endpoints.
+ * Handles registration, login, token refresh, password change, and logout.
+ */
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  /**
+   * Register a new user.
+   * @param request - Fastify request with RegisterBody
+   * @param reply - Fastify reply
+   * @returns 201 with created user
+   */
   async register(request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) {
     const user = await this.authService.register(request.body);
     return reply.status(201).success(user, 'User registered successfully');
   }
 
+  /**
+   * Login with email and password. Sets JWT cookies on success.
+   * @param request - Fastify request with LoginBody
+   * @param reply - Fastify reply
+   * @returns 200 with status or 401 with error
+   */
   async login(request: FastifyRequest<{ Body: LoginBody }>, reply: FastifyReply) {
     const user = await this.authService.validateUser(request.body);
     if (!user) {
@@ -47,6 +63,12 @@ export class AuthController {
       .success({ status: 'ok' }, 'Login successful');
   }
 
+  /**
+   * Refresh access token using refresh token cookie.
+   * @param request - Fastify request (reads refresh_token cookie)
+   * @param reply - Fastify reply
+   * @returns 200 with new token cookie or 401 with error
+   */
   async refreshToken(request: FastifyRequest, reply: FastifyReply) {
     const { refresh_token: refreshToken } = request.cookies;
     if (!refreshToken) {
@@ -79,6 +101,12 @@ export class AuthController {
       .success({ status: 'ok' }, 'Token refreshed');
   }
 
+  /**
+   * Change authenticated user's password.
+   * @param request - Fastify request with ChangePasswordBody
+   * @param reply - Fastify reply
+   * @returns 200 with status or 400 with error
+   */
   async changePassword(request: FastifyRequest<{ Body: ChangePasswordBody }>, reply: FastifyReply) {
     const userId = request.user.id;
     try {
@@ -90,6 +118,12 @@ export class AuthController {
     }
   }
 
+  /**
+   * Logout and clear authentication cookies.
+   * @param request - Fastify request
+   * @param reply - Fastify reply
+   * @returns 200 with status and cleared cookies
+   */
   async logout(request: FastifyRequest, reply: FastifyReply) {
     const userId = request.user?.id;
     if (userId) {

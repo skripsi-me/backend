@@ -4,9 +4,19 @@ import { eq, sql, desc, and, gte, lte } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { CartsService } from '../carts/carts.service.js';
 
+/**
+ * Service for order management operations.
+ * Handles order creation, retrieval, status updates, and reporting.
+ */
 export class OrdersService {
   private cartsService = new CartsService();
 
+  /**
+   * Get order report grouped by date within a date range.
+   * @param startDate - Start date for report
+   * @param endDate - End date for report (inclusive)
+   * @returns Array of report entries with date, total_amount, and order_count
+   */
   async getReport(startDate: Date, endDate: Date) {
     const result = await db.select({
       date: sql<string>`DATE(${orders.createdAt})`,
@@ -30,6 +40,13 @@ export class OrdersService {
     }));
   }
 
+  /**
+   * Create order from cart items (checkout).
+   * Decreases stock, clears cart, and creates order with items.
+   * @param userId - User ULID
+   * @returns Created order with items
+   * @throws Error if cart is empty
+   */
   async createFromCart(userId: string) {
     const cart = await this.cartsService.getByUserId(userId);
     
@@ -77,6 +94,11 @@ export class OrdersService {
     return this.getById(orderId);
   }
 
+  /**
+   * Get order by ID with items.
+   * @param id - Order ULID
+   * @returns Order object with items and product names, or null if not found
+   */
   async getById(id: string) {
     const [order] = await db.select({
       id: orders.id,
@@ -108,6 +130,11 @@ export class OrdersService {
     };
   }
 
+  /**
+   * List orders by user ID, sorted by newest first.
+   * @param userId - User ULID
+   * @returns Array of order objects
+   */
   async listByUser(userId: string) {
     return db.select({
       id: orders.id,
@@ -118,6 +145,10 @@ export class OrdersService {
     }).from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
   }
 
+  /**
+   * List all orders with user email (admin only).
+   * @returns Array of order objects with user info
+   */
   async listAll() {
     return db.select({
       id: orders.id,
@@ -134,6 +165,12 @@ export class OrdersService {
     .orderBy(desc(orders.createdAt));
   }
 
+  /**
+   * Update order status.
+   * @param id - Order ULID
+   * @param status - New status (pending, shipped, delivered, cancelled)
+   * @returns Updated order with items
+   */
   async updateStatus(id: string, status: string) {
     await db.update(orders).set({ status }).where(eq(orders.id, id));
     return this.getById(id);
