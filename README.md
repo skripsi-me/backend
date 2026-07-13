@@ -154,8 +154,6 @@ Server akan berjalan di `http://localhost:3000`. Swagger UI tersedia di `http://
 | `npm test` | Jalankan integration test |
 | `npm run lint:fix` | Format code dengan ESLint + Prettier |
 | `npx drizzle-kit push` | Sinkronisasi schema ke database |
-| `npm run vercel:dev` | Jalankan Vercel dev server |
-| `npm run vercel:deploy` | Deploy ke Vercel production |
 
 ### Testing
 
@@ -171,7 +169,7 @@ npx vitest src/modules/products/tests/products.test.ts
 
 ## Produksi
 
-### Local Production
+### Build & Jalankan
 
 ```bash
 # Build
@@ -181,33 +179,20 @@ npm run build
 npm run start
 ```
 
-### Deploy ke Vercel + TiDB
+### Deploy ke VPS/Server
 
-Backend ini support deploy ke Vercel dengan TiDB sebagai database.
+1. Install Node.js 20+ dan MariaDB di server
+2. Clone repository dan install dependencies
+3. Setup `.env` dengan konfigurasi production
+4. Jalankan MariaDB dan sinkronisasi schema
+5. Gunakan PM2 atau systemd untuk process manager:
 
 ```bash
-# 1. Install Vercel CLI
-npm i -g vercel
-
-# 2. Login
-vercel login
-
-# 3. Set environment variables
-vercel env add DATABASE_URL production
-# Paste TiDB connection string
-
-vercel env add JWT_SECRET production
-vercel env add COOKIE_SECRET production
-vercel env add IMAGEKIT_PUBLIC_KEY production
-vercel env add IMAGEKIT_PRIVATE_KEY production
-vercel env add IMAGEKIT_URL_ENDPOINT production
-vercel env add NODE_ENV production
-
-# 4. Deploy
-vercel --prod
+# Contoh dengan PM2
+npm run build
+pm2 start dist/src/server.js --name "ecommerce-api"
+pm2 save
 ```
-
-Lihat `docs/DEPLOYMENT.md` untuk panduan lengkap.
 
 Pastikan environment variables di production sudah dikonfigurasi dengan benar (lihat `docs/ENVIRONMENT.md`).
 
@@ -215,7 +200,6 @@ Pastikan environment variables di production sudah dikonfigurasi dengan benar (l
 
 - `docs/API_REFERENCE.md` — Referensi API lengkap untuk frontend
 - `docs/ARCHITECTURE.md` — Arsitektur dan desain sistem
-- `docs/DEPLOYMENT.md` — Panduan deploy ke Vercel + TiDB
 - `docs/ENVIRONMENT.md` — Konfigurasi environment variables
 - `docs/RESPONSE.md` — Contoh request/response API
 - `docs/SECURITY.md` — Kebijakan keamanan

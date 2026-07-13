@@ -1,30 +1,14 @@
 import mysql from 'mysql2/promise';
 import { env } from './src/config/env.js';
 
-// Parse TiDB connection string if available
-function parseConnectionString(url: string) {
-  const parsed = new URL(url);
-  return {
-    host: parsed.hostname,
-    port: Number(parsed.port) || 3306,
-    user: parsed.username,
-    password: parsed.password,
-    database: parsed.pathname.replace('/', ''),
-  };
-}
-
 async function main() {
-  const connectionConfig = env.DATABASE_URL
-    ? parseConnectionString(env.DATABASE_URL)
-    : {
-        host: env.DATABASE_HOST!,
-        port: env.DATABASE_PORT!,
-        user: env.DATABASE_USER!,
-        password: env.DATABASE_PASSWORD || '',
-        database: env.DATABASE_NAME!,
-      };
-
-  const connection = await mysql.createConnection(connectionConfig);
+  const connection = await mysql.createConnection({
+    host: env.DATABASE_HOST,
+    port: env.DATABASE_PORT,
+    user: env.DATABASE_USER,
+    password: env.DATABASE_PASSWORD || '',
+    database: env.DATABASE_NAME,
+  });
 
   console.log('Connected to database');
 

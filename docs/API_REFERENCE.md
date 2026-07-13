@@ -26,12 +26,12 @@ Dokumentasi lengkap semua endpoint API untuk keperluan integrasi frontend.
 | Item | Nilai |
 |------|-------|
 | Base URL (Development) | `http://localhost:3000` |
-| Base URL (Production) | `https://your-app.vercel.app` |
+| Base URL (Production) | `https://api.yourdomain.com` |
 | API Prefix | Semua endpoint diawali `/api` |
 | Content-Type | `application/json` |
 | Swagger UI | `http://localhost:3000/docs` (development only) |
 
-> Untuk production (Vercel), semua request harus menggunakan HTTPS.
+> Untuk production, gunakan HTTPS melalui reverse proxy (Nginx + Let's Encrypt).
 
 ---
 
@@ -1424,7 +1424,7 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 
 ```javascript
 // Login
-await fetch('http://localhost:3000/api/auth/login', {
+await fetch('/api/auth/login', {
   method: 'POST',
   credentials: 'include',
   headers: { 'Content-Type': 'application/json' },
@@ -1435,7 +1435,7 @@ await fetch('http://localhost:3000/api/auth/login', {
 });
 
 // Ambil profile (cookie dikirim otomatis)
-const profileRes = await fetch('http://localhost:3000/api/users/me', {
+const profileRes = await fetch('/api/users/me', {
   credentials: 'include'
 });
 const { data: profile } = await profileRes.json();
@@ -1451,7 +1451,7 @@ const params = new URLSearchParams({
   category_id: '01HSX1ABCDEF23456789JKLMN'
 });
 
-const res = await fetch(`http://localhost:3000/api/products?${params}`, {
+const res = await fetch(`/api/products?${params}`, {
   credentials: 'include'
 });
 const { data } = await res.json();
@@ -1462,7 +1462,7 @@ const { data } = await res.json();
 ### Tambah ke Cart
 
 ```javascript
-await fetch('http://localhost:3000/api/carts/items', {
+await fetch('/api/carts/items', {
   method: 'POST',
   credentials: 'include',
   headers: { 'Content-Type': 'application/json' },
@@ -1476,7 +1476,7 @@ await fetch('http://localhost:3000/api/carts/items', {
 ### Checkout
 
 ```javascript
-const res = await fetch('http://localhost:3000/api/orders', {
+const res = await fetch('/api/orders', {
   method: 'POST',
   credentials: 'include'
 });
@@ -1493,7 +1493,7 @@ async function apiCall(url, options = {}) {
 
   if (res.status === 401) {
     // Coba refresh token
-    const refreshRes = await fetch('http://localhost:3000/api/auth/refresh', {
+    const refreshRes = await fetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include'
     });

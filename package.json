@@ -6,13 +6,9 @@
     "build": "tsc",
     "start": "node dist/src/server.js",
     "test": "vitest",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
-    "vercel:dev": "vercel dev",
-    "vercel:build": "vercel build",
-    "vercel:deploy": "vercel --prod"
+    "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\""
   },
   "dependencies": {
-    "@fastify/aws-lambda": "^4.1.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
@@ -44,7 +40,6 @@
     "prettier": "^3.5.1",
     "tsx": "^4.22.0",
     "typescript": "^6.0.3",
-    "vercel": "^55.0.0",
     "vitest": "^4.1.6"
   }
 }
