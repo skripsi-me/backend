@@ -22,7 +22,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       summary: 'Get all categories',
       description: 'Returns a list of all product categories.'
     } 
-  }, categoriesController.getAll.bind(categoriesController));
+  }, categoriesController.getAll.bind(categoriesController) as any);
   
   provider.get('/:slug', {
     schema: {
@@ -31,7 +31,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       summary: 'Get category by slug',
       description: 'Returns a category by its URL-friendly slug.'
     }
-  }, categoriesController.getBySlug.bind(categoriesController));
+  }, categoriesController.getBySlug.bind(categoriesController) as any);
 
   provider.post('/', {
     schema: {
@@ -42,7 +42,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, categoriesController.create.bind(categoriesController));
+  }, categoriesController.create.bind(categoriesController) as any);
 
   provider.patch('/:id', {
     schema: {
@@ -53,7 +53,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, categoriesController.update.bind(categoriesController));
+  }, categoriesController.update.bind(categoriesController) as any);
 
   provider.delete('/:id', {
     schema: {
@@ -64,5 +64,5 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, categoriesController.delete.bind(categoriesController));
+  }, categoriesController.delete.bind(categoriesController) as any);
 };

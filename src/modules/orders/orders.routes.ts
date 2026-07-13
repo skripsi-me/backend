@@ -26,7 +26,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, ordersController.getReport.bind(ordersController));
+  }, ordersController.getReport.bind(ordersController) as any);
 
   provider.post('/', { 
     schema: {
@@ -36,7 +36,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       description: 'Creates a new order using the items currently in the user shopping cart.',
       security: [{ bearerAuth: [] }]
     } 
-  }, ordersController.create.bind(ordersController));
+  }, ordersController.create.bind(ordersController) as any);
 
   provider.get('/me', { 
     schema: {
@@ -46,7 +46,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       description: 'Returns a list of orders placed by the currently authenticated user.',
       security: [{ bearerAuth: [] }]
     } 
-  }, ordersController.listMine.bind(ordersController));
+  }, ordersController.listMine.bind(ordersController) as any);
 
   provider.get('/:id', { 
     schema: {
@@ -56,7 +56,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       description: 'Returns details of a specific order by its ULID.',
       security: [{ bearerAuth: [] }]
     } 
-  }, ordersController.getById.bind(ordersController));
+  }, ordersController.getById.bind(ordersController) as any);
 
   // Admin/Courier routes
   provider.get('/', {
@@ -68,7 +68,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, ordersController.listAll.bind(ordersController));
+  }, ordersController.listAll.bind(ordersController) as any);
 
   provider.patch('/:id/status', {
     schema: {
@@ -79,5 +79,5 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, ordersController.updateStatus.bind(ordersController));
+  }, ordersController.updateStatus.bind(ordersController) as any);
 };

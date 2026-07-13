@@ -33,15 +33,15 @@ export class AuthController {
       return reply.status(401).send(formatError(401, 'Invalid credentials'));
     }
 
-    const accessToken = await reply.jwtSign(
+    const accessToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '15m' }
-    );
+    )) as string;
 
-    const refreshToken = await reply.jwtSign(
+    const refreshToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '7d' }
-    ) as string;
+    )) as string;
 
     await this.authService.updateRefreshToken(user.id, refreshToken);
 
@@ -85,10 +85,10 @@ export class AuthController {
       return reply.status(401).send(formatError(401, 'Session expired or invalid'));
     }
 
-    const newAccessToken = await reply.jwtSign(
+    const newAccessToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '15m' }
-    );
+    )) as string;
 
     return reply
       .setCookie('token', newAccessToken, {

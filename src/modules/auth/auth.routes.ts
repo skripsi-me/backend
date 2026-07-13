@@ -22,7 +22,7 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       summary: 'Register a new user',
       description: 'Creates a new user account with the provided details.'
     } 
-  }, authController.register.bind(authController));
+  }, authController.register.bind(authController) as any);
 
   provider.post('/login', { 
     schema: {
@@ -31,7 +31,7 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       summary: 'User login',
       description: 'Authenticates a user and sets session cookies.'
     } 
-  }, authController.login.bind(authController));
+  }, authController.login.bind(authController) as any);
 
   provider.post('/refresh', { 
     schema: {
@@ -40,7 +40,7 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       summary: 'Refresh session',
       description: 'Refreshes the access token using the refresh token from cookies.'
     } 
-  }, authController.refreshToken.bind(authController));
+  }, authController.refreshToken.bind(authController) as any);
 
   provider.post('/logout', { 
     schema: {
@@ -49,7 +49,7 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       summary: 'User logout',
       description: 'Clears user session cookies.'
     } 
-  }, authController.logout.bind(authController));
+  }, authController.logout.bind(authController) as any);
   
   provider.post('/change-password', {
     onRequest: [fastify.authenticate],
@@ -60,5 +60,5 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       description: 'Updates the password for the currently authenticated user.',
       security: [{ bearerAuth: [] }]
     },
-  }, authController.changePassword.bind(authController));
+  }, authController.changePassword.bind(authController) as any);
 };

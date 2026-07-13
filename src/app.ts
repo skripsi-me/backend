@@ -48,7 +48,7 @@ export const buildApp = async () => {
     // Handle Validation Errors
     if (error.validation) {
       const validationErrors: Record<string, string> = {};
-      error.validation.forEach((err) => {
+      error.validation.forEach((err: any) => {
         // Extract the field name from instancePath or params
         const field = err.instancePath.replace(/^\//, '') || 
                      (err.params && 'missingProperty' in err.params ? String(err.params.missingProperty) : 'unknown');

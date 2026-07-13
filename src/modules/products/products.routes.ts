@@ -25,7 +25,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       summary: 'Get best seller products',
       description: 'Returns a list of products ordered by total quantity sold. Default limit is 5.',
     }
-  }, productsController.getBestSellers.bind(productsController));
+  }, productsController.getBestSellers.bind(productsController) as any);
 
   provider.get('/', { 
     schema: {
@@ -34,7 +34,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       summary: 'List all products',
       description: 'Returns a paginated list of products with optional filtering by search term or category.'
     } 
-  }, productsController.list.bind(productsController));
+  }, productsController.list.bind(productsController) as any);
 
   provider.get('/:id', { 
     schema: {
@@ -45,7 +45,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly] 
-  }, productsController.getById.bind(productsController));
+  }, productsController.getById.bind(productsController) as any);
   
   provider.get('/slug/:slug', { 
     schema: {
@@ -54,7 +54,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       summary: 'Get product by slug',
       description: 'Returns a single product by its URL-friendly slug.'
     } 
-  }, productsController.getBySlug.bind(productsController));
+  }, productsController.getBySlug.bind(productsController) as any);
 
   provider.get('/category/:categorySlug', { 
     schema: {
@@ -63,7 +63,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       summary: 'List products by category slug',
       description: 'Returns a paginated list of products belonging to a specific category.'
     } 
-  }, productsController.listByCategorySlug.bind(productsController));
+  }, productsController.listByCategorySlug.bind(productsController) as any);
 
   provider.post('/', {
     schema: {
@@ -74,7 +74,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, productsController.create.bind(productsController));
+  }, productsController.create.bind(productsController) as any);
 
   provider.patch('/:id', {
     schema: {
@@ -85,7 +85,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, productsController.update.bind(productsController));
+  }, productsController.update.bind(productsController) as any);
 
   provider.delete('/:id', {
     schema: {
@@ -96,5 +96,5 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, productsController.delete.bind(productsController));
+  }, productsController.delete.bind(productsController) as any);
 };

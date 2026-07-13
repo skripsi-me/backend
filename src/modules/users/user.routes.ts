@@ -28,7 +28,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       description: 'Returns the profile of the currently authenticated user.',
       security: [{ bearerAuth: [] }]
     } 
-  }, userController.me.bind(userController));
+  }, userController.me.bind(userController) as any);
 
   provider.patch('/me', { 
     schema: {
@@ -38,7 +38,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       description: 'Updates the profile of the currently authenticated user.',
       security: [{ bearerAuth: [] }]
     } 
-  }, userController.updateProfile.bind(userController));
+  }, userController.updateProfile.bind(userController) as any);
 
   // Admin only routes
   provider.get('/', {
@@ -50,7 +50,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, userController.getAll.bind(userController));
+  }, userController.getAll.bind(userController) as any);
 
   provider.get('/:id', {
     schema: {
@@ -61,7 +61,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, userController.getById.bind(userController));
+  }, userController.getById.bind(userController) as any);
 
   provider.post('/', {
     schema: {
@@ -72,7 +72,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, userController.create.bind(userController));
+  }, userController.create.bind(userController) as any);
 
   provider.patch('/:id', {
     schema: {
@@ -83,7 +83,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, userController.update.bind(userController));
+  }, userController.update.bind(userController) as any);
 
   provider.delete('/:id', {
     schema: {
@@ -94,5 +94,5 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
-  }, userController.delete.bind(userController));
+  }, userController.delete.bind(userController) as any);
 };
