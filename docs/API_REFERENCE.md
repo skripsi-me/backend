@@ -25,10 +25,13 @@ Dokumentasi lengkap semua endpoint API untuk keperluan integrasi frontend.
 
 | Item | Nilai |
 |------|-------|
-| Base URL | `http://localhost:3000` |
+| Base URL (Development) | `http://localhost:3000` |
+| Base URL (Production) | `https://your-app.vercel.app` |
 | API Prefix | Semua endpoint diawali `/api` |
 | Content-Type | `application/json` |
-| Swagger UI | `http://localhost:3000/docs` |
+| Swagger UI | `http://localhost:3000/docs` (development only) |
+
+> Untuk production (Vercel), semua request harus menggunakan HTTPS.
 
 ---
 

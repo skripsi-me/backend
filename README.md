@@ -154,6 +154,8 @@ Server akan berjalan di `http://localhost:3000`. Swagger UI tersedia di `http://
 | `npm test` | Jalankan integration test |
 | `npm run lint:fix` | Format code dengan ESLint + Prettier |
 | `npx drizzle-kit push` | Sinkronisasi schema ke database |
+| `npm run vercel:dev` | Jalankan Vercel dev server |
+| `npm run vercel:deploy` | Deploy ke Vercel production |
 
 ### Testing
 
@@ -169,6 +171,8 @@ npx vitest src/modules/products/tests/products.test.ts
 
 ## Produksi
 
+### Local Production
+
 ```bash
 # Build
 npm run build
@@ -177,13 +181,44 @@ npm run build
 npm run start
 ```
 
-Pastikan environment variables di生产 sudah dikonfigurasi dengan benar (lihat `docs/ENVIRONMENT.md`).
+### Deploy ke Vercel + TiDB
+
+Backend ini support deploy ke Vercel dengan TiDB sebagai database.
+
+```bash
+# 1. Install Vercel CLI
+npm i -g vercel
+
+# 2. Login
+vercel login
+
+# 3. Set environment variables
+vercel env add DATABASE_URL production
+# Paste TiDB connection string
+
+vercel env add JWT_SECRET production
+vercel env add COOKIE_SECRET production
+vercel env add IMAGEKIT_PUBLIC_KEY production
+vercel env add IMAGEKIT_PRIVATE_KEY production
+vercel env add IMAGEKIT_URL_ENDPOINT production
+vercel env add NODE_ENV production
+
+# 4. Deploy
+vercel --prod
+```
+
+Lihat `docs/DEPLOYMENT.md` untuk panduan lengkap.
+
+Pastikan environment variables di production sudah dikonfigurasi dengan benar (lihat `docs/ENVIRONMENT.md`).
 
 ## Dokumentasi Lainnya
 
+- `docs/API_REFERENCE.md` — Referensi API lengkap untuk frontend
 - `docs/ARCHITECTURE.md` — Arsitektur dan desain sistem
+- `docs/DEPLOYMENT.md` — Panduan deploy ke Vercel + TiDB
 - `docs/ENVIRONMENT.md` — Konfigurasi environment variables
 - `docs/RESPONSE.md` — Contoh request/response API
+- `docs/SECURITY.md` — Kebijakan keamanan
 - `http://localhost:3000/docs` — Swagger UI (otomatis)
 
 ## Konvensi Git
