@@ -23,12 +23,16 @@ declare module 'fastify' {
 }
 
 export const buildApp = async () => {
+  const isProduction = env.NODE_ENV === 'production';
+
   const app = Fastify({
-    logger: {
-      transport: {
-        target: 'pino-pretty',
-      },
-    },
+    logger: isProduction
+      ? true
+      : {
+          transport: {
+            target: 'pino-pretty',
+          },
+        },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   // Decorate Reply for standardized success response
