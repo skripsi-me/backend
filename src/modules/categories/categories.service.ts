@@ -25,6 +25,23 @@ export class CategoriesService {
   }
 
   /**
+   * Get category by slug.
+   * @param slug - Category slug
+   * @returns Category object or undefined if not found
+   */
+  async getBySlug(slug: string) {
+    const [category] = await db.select({
+      id: categories.id,
+      name: categories.name,
+      slug: categories.slug,
+      description: categories.description,
+      created_at: categories.createdAt,
+      updated_at: categories.updatedAt,
+    }).from(categories).where(eq(categories.slug, slug)).limit(1);
+    return category;
+  }
+
+  /**
    * Get category by ID.
    * @param id - Category ULID
    * @returns Category object or undefined if not found
@@ -90,11 +107,15 @@ export class CategoriesService {
   /**
    * Update category by ID.
    * @param id - Category ULID
-   * @param data - Partial category data to update
+   * @param data - Partial category data to update (name, description)
    * @returns Updated category object
    */
   async update(id: string, data: UpdateCategoryBody) {
-    await db.update(categories).set(data).where(eq(categories.id, id));
+    const updateData: Record<string, unknown> = { ...data };
+    if (data.name) {
+      updateData.slug = await this.generateSlug(data.name);
+    }
+    await db.update(categories).set(updateData).where(eq(categories.id, id));
     return this.getById(id);
   }
 

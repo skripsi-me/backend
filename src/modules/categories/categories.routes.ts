@@ -6,7 +6,7 @@ import {
   CreateCategorySchema, 
   UpdateCategorySchema,
   GetCategoriesSchema,
-  GetCategorySchema,
+  GetCategoryBySlugSchema,
   DeleteCategorySchema
 } from './categories.schema.js';
 
@@ -24,16 +24,14 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
     } 
   }, categoriesController.getAll.bind(categoriesController));
   
-  provider.get('/:id', {
+  provider.get('/:slug', {
     schema: {
-      ...GetCategorySchema,
+      ...GetCategoryBySlugSchema,
       tags: ['Categories'],
-      summary: 'Get category by ID (Admin)',
-      description: 'Returns a category by its ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
-    },
-    onRequest: [fastify.adminOnly],
-  }, categoriesController.getById.bind(categoriesController));
+      summary: 'Get category by slug',
+      description: 'Returns a category by its URL-friendly slug.'
+    }
+  }, categoriesController.getBySlug.bind(categoriesController));
 
   provider.post('/', {
     schema: {
@@ -46,7 +44,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
     onRequest: [fastify.adminOnly],
   }, categoriesController.create.bind(categoriesController));
 
-  provider.put('/:id', {
+  provider.patch('/:id', {
     schema: {
       ...UpdateCategorySchema,
       tags: ['Categories'],

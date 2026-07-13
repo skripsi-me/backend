@@ -22,6 +22,20 @@ export class CategoriesController {
   }
 
   /**
+   * Get category by slug (public).
+   * @param request - Fastify request with category slug param
+   * @param reply - Fastify reply
+   * @returns 200 with category or 404 if not found
+   */
+  async getBySlug(request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) {
+    const category = await this.categoriesService.getBySlug(request.params.slug);
+    if (!category) {
+      return reply.status(404).send(formatError(404, 'Category not found'));
+    }
+    return reply.success(category);
+  }
+
+  /**
    * Get category by ID (admin only).
    * @param request - Fastify request with category ID param
    * @param reply - Fastify reply
@@ -64,10 +78,10 @@ export class CategoriesController {
    * Delete category by ID (admin only).
    * @param request - Fastify request with category ID param
    * @param reply - Fastify reply
-   * @returns 204 with no content
+   * @returns 200 with success status
    */
   async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    await this.categoriesService.delete(request.params.id);
-    return reply.status(204).send();
+    const result = await this.categoriesService.delete(request.params.id);
+    return reply.success(result);
   }
 }

@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { ProductsService } from './products.service.js';
-import { type ListProductsQuery, type GetBestSellersQuery } from './products.schema.js';
+import { type ListProductsQuery, type GetBestSellersQuery, type CreateProductBody, type UpdateProductBody } from './products.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 /**
@@ -73,54 +73,24 @@ export class ProductsController {
   }
 
   /**
-   * Create a new product (admin only). Handles multipart/form-data with optional image.
-   * @param request - Fastify request with multipart body
+   * Create a new product (admin only).
+   * @param request - Fastify request with CreateProductBody
    * @param reply - Fastify reply
    * @returns 201 with created product
    */
-  async create(request: FastifyRequest, reply: FastifyReply) {
-    const parts = request.parts();
-    const body: Record<string, any> = {};
-    let file: { buffer: Buffer; filename: string } | null = null;
-
-    for await (const part of parts) {
-      if (part.type === 'file') {
-        file = {
-          buffer: await part.toBuffer(),
-          filename: part.filename,
-        };
-      } else {
-        body[part.fieldname] = part.value;
-      }
-    }
-
-    const product = await this.productsService.create(body, file || undefined);
+  async create(request: FastifyRequest<{ Body: CreateProductBody }>, reply: FastifyReply) {
+    const product = await this.productsService.create(request.body);
     return reply.status(201).success(product);
   }
 
   /**
-   * Update product by ID (admin only). Handles multipart/form-data with optional image.
-   * @param request - Fastify request with product ID and multipart body
+   * Update product by ID (admin only).
+   * @param request - Fastify request with product ID and UpdateProductBody
    * @param reply - Fastify reply
    * @returns 200 with updated product or 404 if not found
    */
-  async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    const parts = request.parts();
-    const body: Record<string, any> = {};
-    let file: { buffer: Buffer; filename: string } | null = null;
-
-    for await (const part of parts) {
-      if (part.type === 'file') {
-        file = {
-          buffer: await part.toBuffer(),
-          filename: part.filename,
-        };
-      } else {
-        body[part.fieldname] = part.value;
-      }
-    }
-
-    const product = await this.productsService.update(request.params.id, body, file || undefined);
+  async update(request: FastifyRequest<{ Params: { id: string }; Body: UpdateProductBody }>, reply: FastifyReply) {
+    const product = await this.productsService.update(request.params.id, request.body);
     if (!product) {
       return reply.status(404).send(formatError(404, 'Product not found'));
     }
@@ -131,10 +101,10 @@ export class ProductsController {
    * Delete product by ID (admin only).
    * @param request - Fastify request with product ID param
    * @param reply - Fastify reply
-   * @returns 204 with no content
+   * @returns 200 with success status
    */
   async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    await this.productsService.delete(request.params.id);
-    return reply.status(204).send();
+    const result = await this.productsService.delete(request.params.id);
+    return reply.success(result);
   }
 }

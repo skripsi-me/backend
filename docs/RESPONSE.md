@@ -459,8 +459,18 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `DELETE /api/users/:id`
 *Membutuhkan role admin*
 
-**Response (204 No Content):**
-> Tidak ada body response.
+**Response (200 OK):**
+```json
+{
+  "metadata": {
+    "code": 200,
+    "message": "Success"
+  },
+  "data": {
+    "success": true
+  }
+}
+```
 
 ---
 
@@ -499,10 +509,10 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
-### Admin: Get Category by ID
+### Get Category by Slug
 
-`GET /api/categories/:id`
-*Membutuhkan role admin*
+`GET /api/categories/:slug`
+*Public*
 
 **Response (200 OK):**
 ```json
@@ -522,6 +532,16 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
+**Response (404 Not Found):**
+```json
+{
+  "metadata": {
+    "code": 404,
+    "message": "Category not found"
+  }
+}
+```
+
 ### Admin: Create Category
 
 `POST /api/categories`
@@ -531,10 +551,11 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 ```json
 {
   "name": "Electronics",
-  "slug": "electronics",
   "description": "Gadgets and devices"
 }
 ```
+
+> `description` bersifat opsional. `slug` otomatis tergenerate dari `name` (contoh: "Electronics" → "electronics").
 
 **Response (201 Created):**
 ```json
@@ -554,9 +575,11 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
+> Jika slug sudah ada, akan ditambahkan suffix angka (contoh: "electronics-1").
+
 ### Admin: Update Category
 
-`PUT /api/categories/:id`
+`PATCH /api/categories/:id`
 *Membutuhkan role admin*
 
 **Request Body:**
@@ -567,7 +590,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
-> Semua field bersifat opsional.
+> Semua field bersifat opsional. Jika `name` diupdate, `slug` otomatis tergenerate ulang.
 
 **Response (200 OK):**
 ```json
@@ -579,7 +602,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
   "data": {
     "id": "01HSX1ABCDEF23456789JKLMN",
     "name": "Electronics & Gadgets",
-    "slug": "electronics",
+    "slug": "electronics-gadgets",
     "description": "Updated description",
     "created_at": "2026-03-20T10:00:00.000Z",
     "updated_at": "2026-03-20T10:05:00.000Z"
@@ -592,8 +615,18 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `DELETE /api/categories/:id`
 *Membutuhkan role admin*
 
-**Response (204 No Content):**
-> Tidak ada body response.
+**Response (200 OK):**
+```json
+{
+  "metadata": {
+    "code": 200,
+    "message": "Success"
+  },
+  "data": {
+    "success": true
+  }
+}
+```
 
 ---
 
@@ -627,7 +660,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
         "description": "Latest smartphone with advanced features",
         "price": "999.00",
         "stock": 50,
-        "image_url": "https://ik.imagekit.io/abc123/products/smartphone.jpg",
+        "image_url": "https://example.com/image.jpg",
+        "category": {
+          "name": "Electronics",
+          "slug": "electronics",
+          "description": "Gadgets and devices"
+        },
         "created_at": "2026-03-20T10:00:00.000Z",
         "updated_at": "2026-03-20T10:00:00.000Z"
       }
@@ -665,7 +703,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
       "description": "Latest smartphone with advanced features",
       "price": "999.00",
       "stock": 50,
-      "image_url": "https://ik.imagekit.io/abc123/products/smartphone.jpg",
+      "image_url": "https://example.com/image.jpg",
+      "category": {
+        "name": "Electronics",
+        "slug": "electronics",
+        "description": "Gadgets and devices"
+      },
       "created_at": "2026-03-20T10:00:00.000Z",
       "updated_at": "2026-03-20T10:00:00.000Z",
       "total_sold": 150
@@ -694,7 +737,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
     "description": "Latest smartphone with advanced features",
     "price": "999.00",
     "stock": 50,
-    "image_url": "https://ik.imagekit.io/abc123/products/smartphone.jpg",
+    "image_url": "https://example.com/image.jpg",
+    "category": {
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Gadgets and devices"
+    },
     "created_at": "2026-03-20T10:00:00.000Z",
     "updated_at": "2026-03-20T10:00:00.000Z"
   }
@@ -723,7 +771,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
         "description": "Latest smartphone with advanced features",
         "price": "999.00",
         "stock": 50,
-        "image_url": "https://ik.imagekit.io/abc123/products/smartphone.jpg",
+        "image_url": "https://example.com/image.jpg",
+        "category": {
+          "name": "Electronics",
+          "slug": "electronics",
+          "description": "Gadgets and devices"
+        },
         "created_at": "2026-03-20T10:00:00.000Z",
         "updated_at": "2026-03-20T10:00:00.000Z"
       }
@@ -758,7 +811,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
     "description": "Latest smartphone with advanced features",
     "price": "999.00",
     "stock": 50,
-    "image_url": "https://ik.imagekit.io/abc123/products/smartphone.jpg",
+    "image_url": "https://example.com/image.jpg",
+    "category": {
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Gadgets and devices"
+    },
     "created_at": "2026-03-20T10:00:00.000Z",
     "updated_at": "2026-03-20T10:00:00.000Z"
   }
@@ -768,19 +826,22 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 ### Admin: Create Product
 
 `POST /api/products`
-*Membutuhkan role admin. Content-Type: multipart/form-data.*
+*Membutuhkan role admin*
 
-**Request Body (multipart/form-data):**
+**Request Body:**
+```json
+{
+  "name": "Smartphone X",
+  "description": "Latest smartphone with advanced features",
+  "price": 999.00,
+  "stock": 50,
+  "category_id": "01HSX1ABCDEF23456789JKLMN",
+  "image_url": "https://example.com/image.jpg"
+}
+```
 
-| Field | Type | Required | Deskripsi |
-|-------|------|----------|-----------|
-| `name` | string | Ya | Nama produk |
-| `slug` | string | Ya | URL slug (unique) |
-| `description` | string | Ya | Deskripsi produk |
-| `price` | string | Ya | Harga (contoh: "999.00") |
-| `stock` | string | Ya | Stok (contoh: "50") |
-| `category_id` | string | Ya | ULID kategori |
-| `image` | file | Tidak | File gambar (maks 5MB) |
+> - `description` dan `image_url` bersifat opsional.
+> - `slug` otomatis tergenerate dari `name` (contoh: "Smartphone X" → "smartphone-x").
 
 **Response (201 Created):**
 ```json
@@ -797,7 +858,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
     "description": "Latest smartphone with advanced features",
     "price": "999.00",
     "stock": 50,
-    "image_url": "https://ik.imagekit.io/abc123/products/01HSY1ABCDEF23456789JKLMN_smartphone.jpg",
+    "image_url": "https://example.com/image.jpg",
+    "category": {
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Gadgets and devices"
+    },
     "created_at": "2026-03-20T10:00:00.000Z",
     "updated_at": "2026-03-20T10:00:00.000Z"
   }
@@ -806,11 +872,19 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 
 ### Admin: Update Product
 
-`PUT /api/products/:id`
-*Membutuhkan role admin. Content-Type: multipart/form-data.*
+`PATCH /api/products/:id`
+*Membutuhkan role admin*
 
-**Request Body (multipart/form-data):**
-> Sama dengan Create Product. Semua field bersifat opsional.
+**Request Body:**
+```json
+{
+  "name": "Smartphone X Pro",
+  "price": 1099.00,
+  "stock": 45
+}
+```
+
+> Semua field bersifat opsional. Jika `name` diupdate, `slug` otomatis tergenerate ulang.
 
 **Response (200 OK):**
 ```json
@@ -827,7 +901,12 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
     "description": "Updated description",
     "price": "1099.00",
     "stock": 45,
-    "image_url": "https://ik.imagekit.io/abc123/products/new-image.jpg",
+    "image_url": "https://example.com/new-image.jpg",
+    "category": {
+      "name": "Electronics",
+      "slug": "electronics",
+      "description": "Gadgets and devices"
+    },
     "created_at": "2026-03-20T10:00:00.000Z",
     "updated_at": "2026-03-20T10:05:00.000Z"
   }
@@ -839,8 +918,18 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `DELETE /api/products/:id`
 *Membutuhkan role admin*
 
-**Response (204 No Content):**
-> Tidak ada body response.
+**Response (200 OK):**
+```json
+{
+  "metadata": {
+    "code": 200,
+    "message": "Success"
+  },
+  "data": {
+    "success": true
+  }
+}
+```
 
 ---
 
@@ -1196,9 +1285,8 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 
 | Code | Keterangan |
 |------|------------|
-| 200 | Sukses |
+| 200 | Sukses (termasuk hapus data) |
 | 201 | Created (berhasil membuat resource baru) |
-| 204 | No Content (berhasil menghapus, tanpa body) |
 | 400 | Bad Request (validasi gagal / bisnis error) |
 | 401 | Unauthorized (token tidak valid atau tidak ada) |
 | 403 | Forbidden (akses ditolak, bukan admin) |

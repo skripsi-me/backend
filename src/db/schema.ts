@@ -31,7 +31,7 @@ export const products = mysqlTable('products', {
   description: text('description'),
   price: decimal('price', { precision: 12, scale: 2 }).notNull(),
   stock: int('stock').notNull().default(0),
-  imageUrl: varchar('image_url', { length: 255 }),
+  imageUrl: text('image_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

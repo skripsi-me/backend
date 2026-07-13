@@ -18,10 +18,10 @@ export const GetCategoriesSchema = {
   },
 };
 
-/** Schema for getting a single category by ID (admin only) */
-export const GetCategorySchema = {
+/** Schema for getting a single category by slug (public) */
+export const GetCategoryBySlugSchema = {
   params: Type.Object({
-    id: Type.String({ description: 'Category ULID' }),
+    slug: Type.String({ description: 'Category slug' }),
   }),
   response: {
     200: createStandardResponseSchema(CategorySchema),
@@ -46,7 +46,6 @@ export const UpdateCategorySchema = {
   }),
   body: Type.Object({
     name: Type.Optional(Type.String({ minLength: 1, description: 'Category name' })),
-    slug: Type.Optional(Type.String({ minLength: 1, description: 'URL-friendly category name' })),
     description: Type.Optional(Type.String({ description: 'Category description' })),
   }),
   response: {
@@ -60,7 +59,9 @@ export const DeleteCategorySchema = {
     id: Type.String({ description: 'Category ULID' }),
   }),
   response: {
-    204: Type.Null({ description: 'Category deleted successfully' }),
+    200: createStandardResponseSchema(Type.Object({
+      success: Type.Boolean({ description: 'Deletion status' }),
+    })),
   },
 };
 

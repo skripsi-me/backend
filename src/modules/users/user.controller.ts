@@ -90,10 +90,10 @@ export class UserController {
    * Delete user by ID (admin only).
    * @param request - Fastify request with user ID param
    * @param reply - Fastify reply
-   * @returns 204 with no content
+   * @returns 200 with success status
    */
   async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    await this.userService.delete(request.params.id);
-    return reply.status(204).send();
+    const result = await this.userService.delete(request.params.id);
+    return reply.success(result);
   }
 }

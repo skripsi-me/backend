@@ -1,6 +1,13 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
+/** Schema for category object within product */
+export const ProductCategorySchema = Type.Object({
+  name: Type.String({ description: 'Category name' }),
+  slug: Type.String({ description: 'Category slug' }),
+  description: Type.Union([Type.String(), Type.Null()], { description: 'Category description' }),
+});
+
 /** Base schema for product object */
 export const ProductSchema = Type.Object({
   id: Type.String({ description: 'Product ULID' }),
@@ -11,6 +18,7 @@ export const ProductSchema = Type.Object({
   price: Type.String({ description: 'Product price (decimal string)' }),
   stock: Type.Number({ description: 'Available stock quantity' }),
   image_url: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
+  category: Type.Optional(Type.Union([ProductCategorySchema, Type.Null()], { description: 'Category details' })),
   created_at: Type.Any({ description: 'Creation timestamp' }),
   updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
@@ -78,18 +86,33 @@ export const ListProductsByCategorySchema = {
   },
 };
 
-/** Schema for creating a new product (admin only, multipart/form-data) */
+/** Schema for creating a new product (admin only) */
 export const CreateProductSchema = {
-  // Multipart body validation is handled in controller
+  body: Type.Object({
+    name: Type.String({ minLength: 1, description: 'Product name' }),
+    description: Type.Optional(Type.String({ description: 'Product description' })),
+    price: Type.Number({ minimum: 0, description: 'Product price' }),
+    stock: Type.Number({ minimum: 0, description: 'Stock quantity' }),
+    category_id: Type.String({ description: 'Category ULID' }),
+    image_url: Type.Optional(Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' })),
+  }),
   response: {
     201: createStandardResponseSchema(ProductSchema),
   },
 };
 
-/** Schema for updating a product by ID (admin only, multipart/form-data) */
+/** Schema for updating a product by ID (admin only) */
 export const UpdateProductSchema = {
   params: Type.Object({
     id: Type.String({ description: 'Product ULID' }),
+  }),
+  body: Type.Object({
+    name: Type.Optional(Type.String({ minLength: 1, description: 'Product name' })),
+    description: Type.Optional(Type.String({ description: 'Product description' })),
+    price: Type.Optional(Type.Number({ minimum: 0, description: 'Product price' })),
+    stock: Type.Optional(Type.Number({ minimum: 0, description: 'Stock quantity' })),
+    category_id: Type.Optional(Type.String({ description: 'Category ULID' })),
+    image_url: Type.Optional(Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' })),
   }),
   response: {
     200: createStandardResponseSchema(ProductSchema),
@@ -102,7 +125,9 @@ export const DeleteProductSchema = {
     id: Type.String({ description: 'Product ULID' }),
   }),
   response: {
-    204: Type.Null({ description: 'Product deleted successfully' }),
+    200: createStandardResponseSchema(Type.Object({
+      success: Type.Boolean({ description: 'Deletion status' }),
+    })),
   },
 };
 
@@ -130,3 +155,7 @@ export type ListProductsQuery = Static<typeof ListProductsSchema.query>;
 export type Product = Static<typeof ProductSchema>;
 /** TypeScript type for best sellers query parameters */
 export type GetBestSellersQuery = Static<typeof GetBestSellersSchema.query>;
+/** TypeScript type for create product request body */
+export type CreateProductBody = Static<typeof CreateProductSchema.body>;
+/** TypeScript type for update product request body */
+export type UpdateProductBody = Static<typeof UpdateProductSchema.body>;

@@ -86,7 +86,9 @@ export const DeleteUserSchema = {
     id: Type.String({ description: 'User ULID' }),
   }),
   response: {
-    204: Type.Null({ description: 'User deleted successfully' }),
+    200: createStandardResponseSchema(Type.Object({
+      success: Type.Boolean({ description: 'Deletion status' }),
+    })),
   },
 };
 

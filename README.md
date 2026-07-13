@@ -63,9 +63,9 @@ Semua response API mengikuti format konsisten:
 | Method | Endpoint | Auth | Deskripsi |
 |--------|----------|------|-----------|
 | GET | `/` | Public | List semua kategori |
-| GET | `/:id` | Admin | Lihat detail kategori |
-| POST | `/` | Admin | Buat kategori baru |
-| PUT | `/:id` | Admin | Update kategori |
+| GET | `/:slug` | Public | Detail kategori berdasarkan slug |
+| POST | `/` | Admin | Buat kategori baru (slug otomatis) |
+| PATCH | `/:id` | Admin | Update kategori |
 | DELETE | `/:id` | Admin | Hapus kategori |
 
 ### Products (`/api/products`)
@@ -77,8 +77,8 @@ Semua response API mengikuti format konsisten:
 | GET | `/slug/:slug` | Public | Detail produk berdasarkan slug |
 | GET | `/category/:categorySlug` | Public | List produk per kategori |
 | GET | `/:id` | Admin | Detail produk berdasarkan ID |
-| POST | `/` | Admin | Buat produk baru (multipart/form-data) |
-| PUT | `/:id` | Admin | Update produk |
+| POST | `/` | Admin | Buat produk baru (slug otomatis) |
+| PATCH | `/:id` | Admin | Update produk |
 | DELETE | `/:id` | Admin | Hapus produk |
 
 ### Carts (`/api/carts`)

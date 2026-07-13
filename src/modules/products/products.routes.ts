@@ -70,18 +70,18 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       ...CreateProductSchema,
       tags: ['Products'],
       summary: 'Create new product (Admin)',
-      description: 'Creates a new product with image upload. Uses multipart/form-data. Required admin privileges.',
+      description: 'Creates a new product. Slug is auto-generated from name. Required admin privileges.',
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, productsController.create.bind(productsController));
 
-  provider.put('/:id', {
+  provider.patch('/:id', {
     schema: {
       ...UpdateProductSchema,
       tags: ['Products'],
       summary: 'Update product (Admin)',
-      description: 'Updates a product by its ULID. Required admin privileges.',
+      description: 'Updates a product by its ULID. Slug is auto-regenerated when name changes. Required admin privileges.',
       security: [{ bearerAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
