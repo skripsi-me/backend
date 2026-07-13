@@ -17,24 +17,32 @@ export const config = {
 export default async function handler(req: any, res: any) {
   const appInstance = await getApp();
 
-  // Convert Vercel request to Node.js request
   const url = new URL(req.url || '/', `https://${req.headers.host || 'localhost'}`);
 
-  // Handle the request
+  // Build inject payload
+  let payload: string | undefined;
+  if (req.body !== undefined && req.body !== null) {
+    payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  }
+
+  // Ensure content-type is set for body requests
+  const headers: Record<string, string> = { ...req.headers };
+  if (payload && !headers['content-type']) {
+    headers['content-type'] = 'application/json';
+  }
+
   const reply = await appInstance.inject({
     method: req.method as any,
     url: url.pathname + url.search,
-    headers: req.headers as Record<string, string>,
-    payload: req.body,
+    headers,
+    payload,
   });
 
-  // Send response
   res.statusCode = reply.statusCode;
 
-  // Set headers
-  const headers = reply.headers;
-  if (headers) {
-    for (const [key, value] of Object.entries(headers)) {
+  const replyHeaders = reply.headers;
+  if (replyHeaders) {
+    for (const [key, value] of Object.entries(replyHeaders)) {
       if (value !== undefined) {
         res.setHeader(key, value);
       }
