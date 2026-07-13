@@ -36,12 +36,12 @@ export class AuthController {
     const accessToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '15m' }
-    )) as string;
+    )) as unknown as string;
 
     const refreshToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '7d' }
-    )) as string;
+    )) as unknown as string;
 
     await this.authService.updateRefreshToken(user.id, refreshToken);
 
@@ -88,7 +88,7 @@ export class AuthController {
     const newAccessToken = (await reply.jwtSign(
       { id: user.id, email: user.email, role: user.role },
       { expiresIn: '15m' }
-    )) as string;
+    )) as unknown as string;
 
     return reply
       .setCookie('token', newAccessToken, {
