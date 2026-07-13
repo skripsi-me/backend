@@ -11,12 +11,6 @@
     "vercel:build": "vercel build",
     "vercel:deploy": "vercel --prod"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "bcrypt",
-      "esbuild"
-    ]
-  },
   "dependencies": {
     "@fastify/aws-lambda": "^4.1.0",
     "@fastify/cookie": "^11.0.2",
