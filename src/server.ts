@@ -7,7 +7,7 @@ const start = async () => {
   try {
     await app.listen({ 
       port: env.PORT, 
-      host: env.HOST 
+      host: env.HOST || '0.0.0.0'
     });
     
     app.log.info(`Server listening on http://${env.HOST}:${env.PORT}`);
