@@ -3,6 +3,9 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import { env } from './env.js';
 import * as schema from '../db/schema.js';
 
+// Detect TiDB Cloud (port 4000 or host contains 'tidbcloud')
+const isTiDB = env.DATABASE_PORT === 4000 || env.DATABASE_HOST.includes('tidbcloud');
+
 const poolConfig: mysql.PoolOptions = {
   host: env.DATABASE_HOST,
   port: env.DATABASE_PORT,
@@ -14,6 +17,7 @@ const poolConfig: mysql.PoolOptions = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
+  ...(isTiDB ? { ssl: { rejectUnauthorized: true } } : {}),
 };
 
 export const pool = mysql.createPool(poolConfig);

@@ -2,12 +2,15 @@ import mysql from 'mysql2/promise';
 import { env } from './src/config/env.js';
 
 async function main() {
+  const isTiDB = env.DATABASE_PORT === 4000 || env.DATABASE_HOST.includes('tidbcloud');
+
   const connection = await mysql.createConnection({
     host: env.DATABASE_HOST,
     port: env.DATABASE_PORT,
     user: env.DATABASE_USER,
     password: env.DATABASE_PASSWORD || '',
     database: env.DATABASE_NAME,
+    ...(isTiDB ? { ssl: { rejectUnauthorized: true } } : {}),
   });
 
   console.log('Connected to database');
