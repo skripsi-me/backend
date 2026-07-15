@@ -12,18 +12,19 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 
 - **JWT HttpOnly Cookies** — Token tidak dapat diakses oleh JavaScript (mencegah XSS)
 - **Signed Cookies** — Cookie ditandatangani dengan `COOKIE_SECRET` (mencegah manipulasi)
-- **Refresh Token** — Access token berlaku 15 menit, refresh token 7 hari
-- ** bcrypt** — Password di-hash dengan 10 salt rounds
+- **Refresh Token Rotation** — Refresh token di-rotate setiap kali digunakan. Token lama otomatis invalid.
+- **bcrypt** — Password di-hash dengan 10 salt rounds
 
 ### Otorisasi
 
 - **Role-based access** — Dua role: `user` dan `admin`
-- **Guard `authenticate`** — Memverifikasi JWT sebelum akses resource
-- **Guard `adminOnly`** — Memverifikasi role `admin` sebelum akses resource administratif
+- **Guard `authenticate`** — Memverifikasi JWT sebelum akses resource. Jika gagal, langsung return 401 dan menghentikan request (tidak lanjut ke handler).
+- **Guard `adminOnly`** — Memverifikasi role `admin` sebelum akses resource administratif. Memastikan `authenticate` berhasil sebelum cek role.
+- **Register admin** — Hanya pengguna dengan role `admin` yang sudah login yang dapat membuat akun admin baru
 
 ### Infrastruktur
 
-- **Rate Limiting** — Maksimal 20 request/detik per IP
+- **Rate Limiting** — Register: 3/menit, Login: 5/menit, Refresh: 10/menit, Global: 100/menit
 - **Helmet** — Security headers (CSP, HSTS, dll)
 - **CORS** — Cross-Origin Resource Sharing dikonfigurasi
 - **MariaDB** — Hanya bind ke `127.0.0.1` (tidak exposed ke luar)
@@ -32,6 +33,8 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 ### Data
 
 - **Validasi Input** — Semua request divalidasi menggunakan TypeBox
+- **Input Sanitization** — User input di-sanitize (strip HTML tags) sebelum disimpan ke DB (name, description, address)
+- **Validasi Stok** — Sistem memeriksa ketersediaan stok saat checkout di dalam transaction. Jika stok tidak mencukupi, transaction di-rollback.
 - **ULID** — ID bersifat non-sequential dan tidak mudah ditebak
 - **Environment Variables** — Secret keys tidak di-hardcode
 

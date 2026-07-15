@@ -2,6 +2,7 @@ import { db } from '../../config/database.js';
 import { products, categories, orderItems } from '../../db/schema.js';
 import { eq, or, and, sql, count, desc, like } from 'drizzle-orm';
 import { ulid } from 'ulidx';
+import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type ListProductsQuery } from './products.schema.js';
 
 /**
@@ -306,9 +307,9 @@ export class ProductsService {
 
     await db.insert(products).values({
       id,
-      name: data.name,
+      name: sanitize(data.name),
       slug,
-      description: data.description,
+      description: data.description ? sanitize(data.description) : null,
       price: String(data.price),
       stock: data.stock,
       categoryId: data.category_id,
@@ -358,6 +359,8 @@ export class ProductsService {
     
     if (data.price !== undefined) updateData.price = String(data.price);
     if (data.stock !== undefined) updateData.stock = data.stock;
+    if (data.name !== undefined) updateData.name = sanitize(data.name);
+    if (data.description !== undefined) updateData.description = data.description ? sanitize(data.description) : null;
 
     if (data.name) {
       updateData.slug = await this.generateSlug(data.name);

@@ -3,6 +3,7 @@ import { users } from '../../db/schema.js';
 import { eq, ne, and } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword } from '../../shared/utils/hash.util.js';
+import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type CreateUserBody, type UpdateUserBody, type UpdateProfileBody } from './user.schema.js';
 
 /**
@@ -55,8 +56,8 @@ export class UserService {
       id,
       email: data.email,
       password: hashedPassword,
-      name: data.name,
-      address: data.address,
+      name: sanitize(data.name),
+      address: data.address ? sanitize(data.address) : null,
       phoneNumber: data.phone_number,
       role: data.role || 'user',
     });
@@ -77,6 +78,14 @@ export class UserService {
       updateData.password = await hashPassword(data.password);
     }
 
+    if (data.name !== undefined) {
+      updateData.name = sanitize(data.name);
+    }
+
+    if (data.address !== undefined) {
+      updateData.address = data.address ? sanitize(data.address) : null;
+    }
+
     if (data.phone_number) {
       updateData.phoneNumber = data.phone_number;
       delete updateData.phone_number;
@@ -94,10 +103,20 @@ export class UserService {
    */
   async updateProfile(id: string, data: UpdateProfileBody) {
     const updateData: any = { ...data };
+    
+    if (data.name !== undefined) {
+      updateData.name = sanitize(data.name);
+    }
+
+    if (data.address !== undefined) {
+      updateData.address = data.address ? sanitize(data.address) : null;
+    }
+
     if (data.phone_number) {
       updateData.phoneNumber = data.phone_number;
       delete updateData.phone_number;
     }
+    
     await db.update(users).set(updateData).where(eq(users.id, id));
     return this.getById(id);
   }

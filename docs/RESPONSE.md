@@ -18,6 +18,8 @@ Dokumentasi ini berisi contoh request dan response untuk semua endpoint. Semua r
 - `data` berisi hasil operasi (ada saat sukses)
 - `error` berisi error per field (ada saat error validasi)
 
+> **Note:** Termasuk error dari auth plugin (401 Unauthorized, 403 Forbidden) — semua menggunakan format `metadata.code` yang sama.
+
 ## Cara Menggunakan Autentikasi
 
 Semua endpoint yang membutuhkan autentikasi menggunakan **HttpOnly signed cookies**. Cookie diatur secara otomatis setelah login.
@@ -27,7 +29,7 @@ Cookie: token=<jwt_access_token>; refresh_token=<jwt_refresh_token>
 ```
 
 - **Access token** (`token`): berlaku 15 menit, path `/`
-- **Refresh token** (`refresh_token`): berlaku 7 hari, path `/api/auth/refresh`
+- **Refresh token** (`refresh_token`): berlaku 7 hari, path `/api/auth/refresh`. Di-rotate setiap kali digunakan.
 
 Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cookie diatur otomatis oleh browser setelah login.
 
@@ -131,11 +133,13 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
   "password": "securePassword123",
   "name": "John Doe",
   "address": "123 Street Name",
-  "phone_number": "08123456789"
+  "phone_number": "08123456789",
+  "role": "user"
 }
 ```
 
-> `address` dan `phone_number` bersifat opsional.
+> `address`, `phone_number`, dan `role` bersifat opsional. Default `role` adalah `"user"`.
+> **Catatan:** Untuk membuat akun dengan `role: "admin"`, harus dilakukan oleh pengguna admin yang sudah login. Jika tidak, request akan ditolak dengan status 403.
 
 **Response (201 Created):**
 ```json
@@ -188,6 +192,8 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 
 `POST /api/auth/refresh`
 
+> Refresh token di-rotate setiap kali digunakan. Refresh token lama akan invalid setelah dipakai.
+
 **Response (200 OK):**
 ```json
 {
@@ -201,7 +207,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 }
 ```
 
-> Access token baru diatur di cookie.
+> Access token baru diatur di cookie `token`. Refresh token baru diatur di cookie `refresh_token`.
 
 ### Change Password
 
@@ -1079,6 +1085,7 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 `POST /api/orders`
 
 > Mengkonversi semua item di keranjang menjadi pesanan. Stok produk akan dikurangi. Keranjang akan dikosongkan.
+> **Validasi stok:** Sistem memeriksa ketersediaan stok untuk setiap item di dalam transaction. Jika stok tidak mencukupi, transaction di-rollback dan order tidak dibuat.
 
 **Response (201 Created):**
 ```json
@@ -1115,6 +1122,16 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
   "metadata": {
     "code": 400,
     "message": "Cart is empty"
+  }
+}
+```
+
+**Response (400 Bad Request) — Stok tidak mencukupi:**
+```json
+{
+  "metadata": {
+    "code": 400,
+    "message": "Insufficient stock for Smartphone X. Available: 2, requested: 5"
   }
 }
 ```
@@ -1292,5 +1309,5 @@ Untuk endpoint yang membutuhkan autentikasi, sertakan cookie dalam request. Cook
 | 403 | Forbidden (akses ditolak, bukan admin) |
 | 404 | Not Found (resource tidak ditemukan) |
 | 409 | Conflict (data sudah ada, contoh: email duplikat) |
-| 429 | Rate Limit (melebihi 20 request/detik) |
+| 429 | Rate Limit (melebihi batas per menit) |
 | 500 | Internal Server Error |

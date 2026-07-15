@@ -1,10 +1,8 @@
 {
     "$schema": "https://opencode.ai/config.json",
-    // Model default: MiMo V2.5 dari Xiaomi
     "model": "opencode/mimo-v2.5-free",
     "lsp": true,
     "autoupdate": true,
-    // File-file ini akan dibaca sebagai "source of truth" oleh AI agent
     "instructions": [
         "AGENTS.md",
         "docs/api-guidelines.md",
@@ -13,81 +11,43 @@
     ],
     "mcp": {
         "mysql": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@f4ww4z/mcp-mysql-server",
-                "mysql://khoican:basmalah123@localhost:3307/skripsi_db"
-            ],
+            "command": ["npx", "-y", "@f4ww4z/mcp-mysql-server", "mysql://khoican:basmalah123@localhost:3307/skripsi_db"],
+            "type": "local",
             "enabled": true
         },
         "github": {
-            "type": "http",
+            "type": "remote",
             "url": "https://api.githubcopilot.com/mcp/",
+            "headers": {
+                "Authorization": "Bearer ${GITHUB_PAT}"
+            },
             "enabled": true
         },
         "filesystem": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-filesystem",
-                "/home/khoican/project/skripsi/backend"
-            ],
+            "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/home/khoican/project/skripsi/backend"],
+            "type": "local",
             "enabled": true
         },
         "sequential-thinking": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-sequential-thinking"
-            ],
+            "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+            "type": "local",
             "enabled": true
         },
         "memory": {
-            "command": "docker",
-            "args": [
-                "run",
-                "-i",
-                "-v",
-                "claude-memory:/app/dist",
-                "--rm",
-                "mcp/memory"
-            ],
+            "command": ["docker", "run", "-i", "-v", "claude-memory:/app/dist", "--rm", "mcp/memory"],
+            "type": "local",
             "enabled": true
         },
         "fetch": {
-            "command": "npx",
-            "args": [
-                "mcp-fetch-server"
-            ],
+            "command": ["npx", "mcp-fetch-server"],
+            "type": "local",
             "enabled": true
         }
     },
-    // Kontrol izin agar AI tidak menjalankan perintah berbahaya tanpa konfirmasi
     "permission": {
         "edit": "allow",
-        "bash": {
-            "*": "ask",
-            "npm run dev*": "allow",
-            "npm run build*": "allow",
-            "npm run test*": "allow",
-            "npm run lint*": "allow",
-            "npx drizzle-kit generate*": "allow",
-            "npx drizzle-kit check*": "allow",
-            "npx drizzle-kit studio*": "ask",
-            "npx drizzle-kit migrate*": "ask",
-            "npx drizzle-kit push*": "ask",
-            "git add*": "allow",
-            "git commit*": "allow",
-            "git push*": "ask",
-            "rm -rf*": "deny",
-            "*DROP DATABASE*": "deny",
-            "*DROP TABLE*": "deny",
-            "*TRUNCATE*": "deny",
-            "sudo*": "deny"
-        }
+        "bash": "allow"
     },
-    // Custom agent tambahan di luar agent bawaan (build, plan)
     "agent": {
         "db-schema": {
             "description": "Agent khusus untuk mengelola schema Drizzle ORM dan migration MySQL. Fokus pada type safety dan konsistensi schema.",

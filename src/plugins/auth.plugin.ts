@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin';
 import { type FastifyPluginAsync, type FastifyReply, type FastifyRequest } from 'fastify';
+import { formatError } from '../shared/utils/response.util.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -20,23 +21,18 @@ const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
     try {
       await request.jwtVerify();
     } catch (err) {
-      reply.status(401).send({
-        error: 'Unauthorized',
-        message: 'Invalid or missing token',
-        statusCode: 401,
-      });
+      request.log.warn({ err }, 'JWT verification failed');
+      return reply.status(401).send(formatError(401, 'Invalid or missing token'));
     }
   });
 
   fastify.decorate('adminOnly', async (request: FastifyRequest, reply: FastifyReply) => {
     await fastify.authenticate(request, reply);
-    
+    if (reply.sent) return;
+
     if (request.user?.role !== 'admin') {
-      reply.status(403).send({
-        error: 'Forbidden',
-        message: 'Admin access required',
-        statusCode: 403,
-      });
+      request.log.warn({ userId: request.user?.id }, 'Non-admin user attempted admin access');
+      return reply.status(403).send(formatError(403, 'Admin access required'));
     }
   });
 });

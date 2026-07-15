@@ -50,6 +50,7 @@ export class OrdersController {
       return reply.status(201).success(order);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
+      request.log.warn({ userId, error: message }, 'Order creation failed');
       return reply.status(400).send(formatError(400, message));
     }
   }

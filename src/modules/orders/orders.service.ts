@@ -71,6 +71,22 @@ export class OrdersService {
     });
 
     await db.transaction(async (tx) => {
+      // Check stock for each item before proceeding
+      for (const item of cart.items) {
+        const [product] = await tx.select({ stock: products.stock })
+          .from(products)
+          .where(eq(products.id, item.product_id))
+          .limit(1);
+
+        if (!product) {
+          throw new Error(`Product not found: ${item.product_id}`);
+        }
+
+        if (product.stock < item.quantity) {
+          throw new Error(`Insufficient stock for ${item.product!.name}. Available: ${product.stock}, requested: ${item.quantity}`);
+        }
+      }
+
       await tx.insert(orders).values({
         id: orderId,
         userId,

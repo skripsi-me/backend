@@ -15,7 +15,7 @@ Dokumentasi ini menjelaskan arsitektur, alur data, dan struktur modul pada backe
 | Password Hashing | bcrypt |
 | ID Generator | ULID (26 karakter) |
 | Image Upload | ImageKit |
-| Security | Helmet, CORS, Rate Limiting |
+| Security | Helmet, CORS, Rate Limiting, Input Sanitization |
 | API Docs | Swagger UI (`/docs`) |
 | Testing | Vitest |
 
@@ -100,7 +100,7 @@ Plugin didaftarkan secara berurutan di `src/app.ts`:
 | Urutan | Plugin | Fungsi |
 |--------|--------|--------|
 | 1 | Security Plugin | Helmet (CSP headers) + CORS |
-| 2 | Rate Limit Plugin | Maksimal 20 request/detik per IP |
+| 2 | Rate Limit Plugin | Register: 3/menit, Login: 5/menit, Refresh: 10/menit, Global: 100/menit |
 | 3 | Swagger Plugin | OpenAPI docs di `/docs` |
 | 4 | Cookie Plugin | Parse & sign cookies dengan `COOKIE_SECRET` |
 | 5 | JWT Plugin | Sign & verify JWT dengan `JWT_SECRET` |
@@ -197,12 +197,36 @@ sequenceDiagram
     Auth-->>C: Set-Cookie: token (access), refresh_token
 ```
 
+### Refresh Token Rotation
+
+Refresh token di-rotate setiap kali digunakan untuk keamanan:
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant Auth as Auth Controller
+    participant DB as MariaDB
+
+    C->>Auth: POST /api/auth/refresh (refresh_token cookie)
+    Auth->>Auth: Unsign cookie
+    Auth->>DB: Find user by refresh_token
+    DB-->>Auth: User data
+    Auth->>Auth: Generate access token baru (15 min)
+    Auth->>Auth: Generate refresh token baru (7 hari)
+    Auth->>DB: Update refresh_token ke yang baru
+    Auth-->>C: Set-Cookie: token (baru), refresh_token (baru)
+```
+
+> Refresh token lama akan **invalid** setelah digunakan. Jika ada reuse refresh token lama, request akan ditolak.
+
 ### Auth Guards
 
 | Guard | Fungsi | Dipakai di |
 |-------|--------|-----------|
-| `authenticate` | Verifikasi JWT dari cookie | Auth (change-password), Carts, Orders, Users (profile) |
-| `adminOnly` | `authenticate` + cek `role === 'admin'` | Products (CRUD), Users (admin), Categories (write), Orders (admin) |
+| `authenticate` | Verifikasi JWT dari cookie. Jika gagal, langsung return 401 dan menghentikan request. | Auth (change-password), Carts, Orders, Users (profile) |
+| `adminOnly` | `authenticate` + cek `role === 'admin'`. Jika authenticate gagal (`reply.sent`), langsung return. Jika role bukan admin, return 403. | Products (CRUD), Users (admin), Categories (write), Orders (admin) |
+
+> **Catatan:** Route `/register` bersifat public untuk role `user`. Untuk role `admin`, autentikasi diperiksa di controller (bukan di hook).
 
 ### Token Structure
 
@@ -316,10 +340,14 @@ erDiagram
 | products | `description_idx` | description | B-Tree |
 | products | `name_fulltext_idx` | name | FULLTEXT |
 | products | `desc_fulltext_idx` | description | FULLTEXT |
+| cart_items | `cart_id_idx` | cart_id | B-Tree |
+| cart_items | `product_id_idx` | product_id | B-Tree |
+| orders | `user_id_idx` | user_id | B-Tree |
+| orders | `created_at_idx` | created_at | B-Tree |
 
 ## Response Format
 
-Semua API response mengikuti format standar:
+Semua API response mengikuti format standar (termasuk error dari auth plugin):
 
 ```json
 {
@@ -335,6 +363,8 @@ Semua API response mengikuti format standar:
 - **Success** — `metadata.code` + `data`
 - **Error** — `metadata.code` + `error` (field-level validation errors)
 
+> **Note:** Auth plugin (`authenticate` & `adminOnly`) juga menggunakan format ini via `formatError()`.
+
 Fungsi utilitas:
 - `formatSuccess(reply, data, message)` — response sukses
 - `formatError(code, message, validationErrors?)` — response error
@@ -344,13 +374,43 @@ Fungsi utilitas:
 
 | Prefix | Module | Auth |
 |--------|--------|------|
-| `/api/auth` | Auth (login, register, refresh, logout) | Public |
+| `/api/auth` | Auth (login, register, refresh, logout) | Public (register admin: adminOnly) |
 | `/api/users` | User management | Profile: authenticate, Admin: adminOnly |
 | `/api/categories` | Product categories | Public (read), adminOnly (write) |
 | `/api/products` | Product CRUD + search | Public (read), adminOnly (write) |
 | `/api/carts` | Shopping cart | authenticate |
-| `/api/orders` | Orders + reporting | authenticate |
+| `/api/orders` | Orders + reporting | authenticate (stock validation di dalam transaction) |
 | `/health` | Health check | Public |
+
+## Logging
+
+Menggunakan built-in Fastify logger (`request.log`). Level: `info` (dev) / `warn` (prod).
+
+**Events yang di-log:**
+- `warn` — JWT verification failed, login failed, refresh token invalid, order creation failed
+- `info` — Request/response lifecycle (otomatis dari Fastify)
+
+## Rate Limiting
+
+Menggunakan `@fastify/rate-limit` dengan konfigurasi:
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| Register | 3 req | 1 menit |
+| Login | 5 req | 1 menit |
+| Refresh | 10 req | 1 menit |
+| Global (lainnya) | 100 req | 1 menit |
+
+Response saat limit tercapai:
+```json
+{
+  "statusCode": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Maximum 5 requests per minute allowed."
+}
+```
+
+---
 
 ## Configuration
 
@@ -418,7 +478,8 @@ backend/
 │       └── utils/
 │           ├── hash.util.ts    # bcrypt helpers
 │           ├── imagekit.util.ts
-│           └── response.util.ts
+│           ├── response.util.ts
+│           └── sanitize.util.ts # Input sanitization
 ├── tests/
 │   └── setup.ts                # Vitest global setup
 ├── .env.example                # Env template

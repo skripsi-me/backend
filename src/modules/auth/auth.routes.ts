@@ -16,6 +16,12 @@ export const authRoutes = async (fastify: FastifyInstance) => {
   const authController = new AuthController(authService);
 
   provider.post('/register', { 
+    config: {
+      rateLimit: {
+        max: 3,
+        timeWindow: '1 minute',
+      },
+    },
     schema: {
       ...RegisterSchema,
       tags: ['Auth'],
@@ -25,6 +31,12 @@ export const authRoutes = async (fastify: FastifyInstance) => {
   }, authController.register.bind(authController) as any);
 
   provider.post('/login', { 
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute',
+      },
+    },
     schema: {
       ...LoginSchema,
       tags: ['Auth'],
@@ -34,6 +46,12 @@ export const authRoutes = async (fastify: FastifyInstance) => {
   }, authController.login.bind(authController) as any);
 
   provider.post('/refresh', { 
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: '1 minute',
+      },
+    },
     schema: {
       ...RefreshTokenSchema,
       tags: ['Auth'],

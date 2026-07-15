@@ -44,7 +44,7 @@ Autentikasi menggunakan **JWT yang disimpan di HttpOnly signed cookies**.
 | Cookie | Fungsi | Masa Berlaku | Path |
 |--------|--------|--------------|------|
 | `token` | Access token | 15 menit | `/` |
-| `refresh_token` | Refresh token | 7 hari | `/api/auth/refresh` |
+| `refresh_token` | Refresh token | 7 hari (di-rotate setiap kali digunakan) | `/api/auth/refresh` |
 
 ### Cara Kerja
 
@@ -129,7 +129,7 @@ const profile = await fetch('http://localhost:3000/api/users/me', {
 | 403 | Forbidden | Bukan admin saat akses endpoint admin |
 | 404 | Not Found | Resource tidak ditemukan |
 | 409 | Conflict | Data sudah ada (contoh: email duplikat) |
-| 429 | Too Many Requests | Melebihi rate limit (20 req/detik) |
+| 429 | Too Many Requests | Melebihi rate limit |
 | 500 | Internal Server Error | Error tak terduga di server |
 
 ### Cara Menangani di Frontend
@@ -165,16 +165,22 @@ try {
 
 ## Rate Limiting
 
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| Register | 3 req | 1 menit |
+| Login | 5 req | 1 menit |
+| Refresh | 10 req | 1 menit |
+| Global (lainnya) | 100 req | 1 menit |
+
 | Item | Nilai |
 |------|-------|
-| Batas | 20 request per detik per IP |
 | Response | `429 Too Many Requests` |
 
 ```json
 {
   "statusCode": 429,
   "error": "Too Many Requests",
-  "message": "Rate limit exceeded. Maximum 20 requests per 1000ms allowed."
+  "message": "Rate limit exceeded. Maximum 5 requests per minute allowed."
 }
 ```
 
@@ -340,6 +346,8 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 | `phone_number` | string | Tidak | — |
 | `role` | string | Tidak | `"user"` atau `"admin"` (default: `"user"`) |
 
+> **Catatan untuk role `admin`:** Hanya pengguna dengan role `admin` yang sudah login yang dapat membuat akun admin baru. Jika tidak terautentikasi atau role bukan `admin`, request akan ditolak.
+
 **Response (201 Created):**
 ```json
 {
@@ -356,6 +364,7 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 ```
 
 **Error:**
+- `403 Forbidden` — Hanya admin yang bisa membuat akun admin
 - `409 Conflict` — Email sudah terdaftar
 
 ---
@@ -390,6 +399,8 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 
 `POST /api/auth/refresh`
 
+> Refresh token di-rotate setiap kali digunakan. Refresh token lama akan invalid setelah dipakai.
+
 **Response (200 OK):**
 ```json
 {
@@ -398,7 +409,7 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 }
 ```
 
-> Access token baru diatur di cookie `token`.
+> Access token baru diatur di cookie `token`. Refresh token baru diatur di cookie `refresh_token`.
 
 **Error:**
 - `401 Unauthorized` — Refresh token tidak valid atau kedaluwarsa
@@ -1219,6 +1230,7 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 *Authenticated*
 
 > Mengkonversi semua item di keranjang menjadi pesanan. Stok produk akan dikurangi. Keranjang akan dikosongkan. Tidak perlu request body.
+> **Validasi stok:** Sistem memeriksa ketersediaan stok untuk setiap item di dalam transaction. Jika stok tidak mencukupi, transaction di-rollback dan order tidak dibuat.
 
 **Response (201 Created):**
 ```json
@@ -1248,6 +1260,7 @@ Beberapa endpoint mendukung pagination. Response menggunakan format:
 
 **Error:**
 - `400 Bad Request` — Cart is empty
+- `400 Bad Request` — Insufficient stock (stok produk tidak mencukupi)
 
 ---
 

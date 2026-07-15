@@ -3,6 +3,7 @@ import { users } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword, comparePassword } from '../../shared/utils/hash.util.js';
+import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type RegisterBody, type LoginBody } from './auth.schema.js';
 
 /**
@@ -23,9 +24,10 @@ export class AuthService {
       id,
       email: data.email,
       password: hashedPassword,
-      name: data.name,
-      address: data.address,
+      name: sanitize(data.name),
+      address: data.address ? sanitize(data.address) : null,
       phoneNumber: data.phone_number,
+      role: data.role || 'user',
     });
 
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);

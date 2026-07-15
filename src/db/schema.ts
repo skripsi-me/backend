@@ -52,7 +52,10 @@ export const cartItems = mysqlTable('cart_items', {
   cartId: varchar('cart_id', { length: 26 }).references(() => carts.id).notNull(),
   productId: varchar('product_id', { length: 26 }).references(() => products.id).notNull(),
   quantity: int('quantity').notNull().default(1),
-});
+}, (table) => ({
+  cartIdIndex: index('cart_id_idx').on(table.cartId),
+  productIdIndex: index('product_id_idx').on(table.productId),
+}));
 
 export const orders = mysqlTable('orders', {
   id: varchar('id', { length: 26 }).primaryKey(),
@@ -61,7 +64,10 @@ export const orders = mysqlTable('orders', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  userIdIndex: index('user_id_idx').on(table.userId),
+  createdAtIndex: index('created_at_idx').on(table.createdAt),
+}));
 
 export const orderItems = mysqlTable('order_items', {
   id: varchar('id', { length: 26 }).primaryKey(),
