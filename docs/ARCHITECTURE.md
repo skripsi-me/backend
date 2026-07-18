@@ -431,6 +431,11 @@ Divalidasi otomatis saat startup menggunakan TypeBox. Lihat `src/config/env.ts`.
 | DATABASE_ROOT_PASSWORD | No | root_sandi_skripsi_aman | Root password MariaDB (Docker) |
 | JWT_SECRET | Yes | - | Secret key JWT |
 | COOKIE_SECRET | Yes | - | Secret key cookies |
+| COOKIE_SAMESITE | No | lax | SameSite policy (strict/lax/none) |
+| COOKIE_SECURE | No | false | Cookie hanya via HTTPS |
+| COOKIE_DOMAIN | No | - | Domain scope (contoh: .example.com) |
+| COOKIE_PATH | No | / | Path scope untuk access token |
+| REFRESH_COOKIE_PATH | No | /api/auth/refresh | Path scope untuk refresh token |
 | IMAGEKIT_PUBLIC_KEY | Yes | - | ImageKit public key |
 | IMAGEKIT_PRIVATE_KEY | Yes | - | ImageKit private key |
 | IMAGEKIT_URL_ENDPOINT | Yes | - | ImageKit URL endpoint |

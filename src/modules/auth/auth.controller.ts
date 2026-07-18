@@ -2,6 +2,7 @@ import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
 import { type RegisterBody, type LoginBody, type ChangePasswordBody } from './auth.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
+import { env } from '../../config/env.js';
 
 /**
  * Controller for authentication endpoints.
@@ -9,6 +10,20 @@ import { formatError } from '../../shared/utils/response.util.js';
  */
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  private getCookieOptions(path: string) {
+    const options: Record<string, any> = {
+      path,
+      httpOnly: true,
+      secure: env.COOKIE_SECURE,
+      sameSite: env.COOKIE_SAMESITE,
+      signed: true,
+    };
+    if (env.COOKIE_DOMAIN) {
+      options.domain = env.COOKIE_DOMAIN;
+    }
+    return options;
+  }
 
   /**
    * Register a new user.
@@ -54,20 +69,8 @@ export class AuthController {
     await this.authService.updateRefreshToken(user.id, refreshToken);
 
     return reply
-      .setCookie('token', accessToken, {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        signed: true,
-      })
-      .setCookie('refresh_token', refreshToken, {
-        path: '/api/auth/refresh',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        signed: true,
-      })
+      .setCookie('token', accessToken, this.getCookieOptions(env.COOKIE_PATH || '/'))
+      .setCookie('refresh_token', refreshToken, this.getCookieOptions(env.REFRESH_COOKIE_PATH || '/api/auth/refresh'))
       .success({ status: 'ok' }, 'Login successful');
   }
 
@@ -109,20 +112,8 @@ export class AuthController {
     await this.authService.updateRefreshToken(user.id, newRefreshToken);
 
     return reply
-      .setCookie('token', newAccessToken, {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        signed: true,
-      })
-      .setCookie('refresh_token', newRefreshToken, {
-        path: '/api/auth/refresh',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        signed: true,
-      })
+      .setCookie('token', newAccessToken, this.getCookieOptions(env.COOKIE_PATH || '/'))
+      .setCookie('refresh_token', newRefreshToken, this.getCookieOptions(env.REFRESH_COOKIE_PATH || '/api/auth/refresh'))
       .success({ status: 'ok' }, 'Token refreshed');
   }
 

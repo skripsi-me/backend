@@ -26,6 +26,13 @@ const DATABASE_USER = requireEnv('DATABASE_USER');
 const DATABASE_PASSWORD = optionalEnv('DATABASE_PASSWORD', '');
 const DATABASE_NAME = requireEnv('DATABASE_NAME');
 
+// Cookie configuration
+const COOKIE_SAMESITE = optionalEnv('COOKIE_SAMESITE', 'lax') as 'strict' | 'lax' | 'none';
+const COOKIE_SECURE = optionalEnv('COOKIE_SECURE', 'false') === 'true';
+const COOKIE_DOMAIN = optionalEnv('COOKIE_DOMAIN'); // optional: .example.com
+const COOKIE_PATH = optionalEnv('COOKIE_PATH', '/');
+const REFRESH_COOKIE_PATH = optionalEnv('REFRESH_COOKIE_PATH', '/api/auth/refresh');
+
 export const env = {
   NODE_ENV: (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test',
   PORT: Number(optionalEnv('PORT', '3000')),
@@ -37,6 +44,11 @@ export const env = {
   DATABASE_NAME,
   JWT_SECRET,
   COOKIE_SECRET,
+  COOKIE_SAMESITE,
+  COOKIE_SECURE,
+  COOKIE_DOMAIN,
+  COOKIE_PATH,
+  REFRESH_COOKIE_PATH,
   IMAGEKIT_PUBLIC_KEY,
   IMAGEKIT_PRIVATE_KEY,
   IMAGEKIT_URL_ENDPOINT,
