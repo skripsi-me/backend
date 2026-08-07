@@ -71,22 +71,6 @@ export class OrdersService {
     });
 
     await db.transaction(async (tx) => {
-      // Check stock for each item before proceeding
-      for (const item of cart.items) {
-        const [product] = await tx.select({ stock: products.stock })
-          .from(products)
-          .where(eq(products.id, item.product_id))
-          .limit(1);
-
-        if (!product) {
-          throw new Error(`Product not found: ${item.product_id}`);
-        }
-
-        if (product.stock < item.quantity) {
-          throw new Error(`Insufficient stock for ${item.product!.name}. Available: ${product.stock}, requested: ${item.quantity}`);
-        }
-      }
-
       await tx.insert(orders).values({
         id: orderId,
         userId,
@@ -96,14 +80,28 @@ export class OrdersService {
 
       await tx.insert(orderItems).values(orderItemsData);
 
-      // Decrease stock
+      // Atomic stock decrement — cek affectedRows
       for (const item of cart.items) {
-        await tx.update(products)
-          .set({ stock: sql`${products.stock} - ${item.quantity}` })
-          .where(eq(products.id, item.product_id));
+        const result = await tx.update(products)
+          .set({ stock: sql`stock - ${item.quantity}` })
+          .where(
+            and(
+              eq(products.id, item.product_id),
+              sql`stock >= ${item.quantity}`
+            )
+          ) as any;
+
+        if (result.affectedRows === 0) {
+          const [product] = await tx.select({ name: products.name, stock: products.stock })
+            .from(products)
+            .where(eq(products.id, item.product_id))
+            .limit(1);
+          const name = product?.name || item.product_id;
+          const available = product?.stock ?? 0;
+          throw new Error(`Insufficient stock for ${name}. Available: ${available}, requested: ${item.quantity}`);
+        }
       }
 
-      // Clear cart
       await tx.delete(cartItems).where(eq(cartItems.cartId, cart.id));
     });
 
@@ -187,7 +185,7 @@ export class OrdersService {
    * @param status - New status (pending, shipped, delivered, cancelled)
    * @returns Updated order with items
    */
-  async updateStatus(id: string, status: string) {
+  async updateStatus(id: string, status: 'pending' | 'shipped' | 'delivered' | 'cancelled') {
     await db.update(orders).set({ status }).where(eq(orders.id, id));
     return this.getById(id);
   }

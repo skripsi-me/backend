@@ -73,6 +73,32 @@ Docker Compose juga menggunakan variabel berikut secara tidak langsung:
 3. Salin `Public Key` dan `Private Key`
 4. Salin `URL Endpoint` dari bagian General Settings
 
+## Variabel CORS
+
+| Variabel | Required | Default | Deskripsi |
+|----------|----------|---------|-----------|
+| `CORS_ORIGINS` | No | `true` (reflect semua) | Comma-separated allowed origins. Kosongkan untuk reflect semua di dev |
+
+### Contoh
+
+```bash
+# Hanya izinkan localhost dan satu domain production
+CORS_ORIGINS=http://localhost:3000,https://mysite.com
+
+# Reflect semua origin (dev mode, TIDAK aman untuk production)
+CORS_ORIGINS=
+```
+
+> **Catatan:** Di production, selalu set `CORS_ORIGINS` ke domain yang spesifik. `origin: true` (reflect) hanya aman untuk development.
+
+## Variabel Server
+
+| Variabel | Required | Default | Deskripsi |
+|----------|----------|---------|-----------|
+| `TRUST_PROXY` | No | `false` | Aktifkan jika di belakang reverse proxy (Vercel, nginx). Membaca IP client asli untuk rate limit dan logging |
+
+> **Catatan:** Jangan set `TRUST_PROXY=true` di local development tanpa proxy. Akan salah baca IP.
+
 ## Contoh File `.env` Lengkap
 
 ```bash
@@ -96,6 +122,12 @@ COOKIE_SECRET=z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1
 IMAGEKIT_PUBLIC_KEY=public_xxxxxxxxxxxxxxxxxxxx
 IMAGEKIT_PRIVATE_KEY=private_xxxxxxxxxxxxxxxxxxxx
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/abc123def456
+
+# === CORS ===
+CORS_ORIGINS=http://localhost:3000,https://mysite.com
+
+# === Server ===
+TRUST_PROXY=true
 ```
 
 ## Troubleshooting

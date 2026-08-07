@@ -6,7 +6,9 @@
     "build": "tsc",
     "start": "node dist/src/server.js",
     "test": "vitest",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

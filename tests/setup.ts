@@ -15,4 +15,3 @@ vi.mock('imagekit', () => {
 // Mock environment for tests if needed
 process.env.JWT_SECRET = 'test_secret_key_long_enough_for_jwt';
 process.env.COOKIE_SECRET = 'test_cookie_secret_key_long_enough';
-process.env.DATABASE_PASSWORD = ''; // MariaDB 11.7.2 local bypass

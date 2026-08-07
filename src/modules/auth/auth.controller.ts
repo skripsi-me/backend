@@ -95,7 +95,7 @@ export class AuthController {
 
     const user = await this.authService.findByRefreshToken(token);
     if (!user) {
-      request.log.warn('Refresh token not found in DB');
+      request.log.warn({ tokenPrefix: token.substring(0, 20) + '...' }, 'Refresh token reuse attempt detected');
       return reply.status(401).send(formatError(401, 'Session expired or invalid'));
     }
 

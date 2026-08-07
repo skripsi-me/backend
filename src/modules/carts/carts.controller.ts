@@ -1,6 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { CartsService } from './carts.service.js';
 import { type AddToCartBody, type UpdateCartItemBody } from './carts.schema.js';
+import { formatError } from '../../shared/utils/response.util.js';
 
 /**
  * Controller for shopping cart endpoints.
@@ -40,9 +41,16 @@ export class CartsController {
    * @returns 200 with updated cart
    */
   async updateItem(request: FastifyRequest<{ Params: { itemId: string }; Body: UpdateCartItemBody }>, reply: FastifyReply) {
-    const userId = request.user.id;
-    const cart = await this.cartsService.updateItem(userId, request.params.itemId, request.body);
-    return reply.success(cart);
+    try {
+      const userId = request.user.id;
+      const cart = await this.cartsService.updateItem(userId, request.params.itemId, request.body);
+      return reply.success(cart);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Cart item not found') {
+        return reply.status(404).send(formatError(404, 'Cart item not found'));
+      }
+      throw err;
+    }
   }
 
   /**
@@ -52,8 +60,15 @@ export class CartsController {
    * @returns 200 with updated cart
    */
   async removeItem(request: FastifyRequest<{ Params: { itemId: string } }>, reply: FastifyReply) {
-    const userId = request.user.id;
-    const cart = await this.cartsService.removeItem(userId, request.params.itemId);
-    return reply.success(cart);
+    try {
+      const userId = request.user.id;
+      const cart = await this.cartsService.removeItem(userId, request.params.itemId);
+      return reply.success(cart);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Cart item not found') {
+        return reply.status(404).send(formatError(404, 'Cart item not found'));
+      }
+      throw err;
+    }
   }
 }

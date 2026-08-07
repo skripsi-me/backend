@@ -2,9 +2,14 @@ import { db } from '../../config/database.js';
 import { users } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { ulid } from 'ulidx';
+import { createHash } from 'crypto';
 import { hashPassword, comparePassword } from '../../shared/utils/hash.util.js';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type RegisterBody, type LoginBody } from './auth.schema.js';
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
 
 /**
  * Service for authentication-related operations.
@@ -19,7 +24,7 @@ export class AuthService {
   async register(data: RegisterBody) {
     const id = ulid();
     const hashedPassword = await hashPassword(data.password);
-    
+
     await db.insert(users).values({
       id,
       email: data.email,
@@ -31,11 +36,17 @@ export class AuthService {
     });
 
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    if (!user) throw new Error('Registration failed');
+
     return {
-      ...user!,
-      phone_number: user!.phoneNumber,
-      created_at: user!.createdAt,
-      updated_at: user!.updatedAt,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      address: user.address,
+      phone_number: user.phoneNumber,
+      role: user.role,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
     };
   }
 
@@ -60,16 +71,20 @@ export class AuthService {
    * @param token - New refresh token or null to clear
    */
   async updateRefreshToken(userId: string, token: string | null) {
-    await db.update(users).set({ refreshToken: token }).where(eq(users.id, userId));
+    const hash = token ? hashToken(token) : null;
+    await db.update(users)
+      .set({ refreshToken: token, refreshTokenHash: hash })
+      .where(eq(users.id, userId));
   }
 
   /**
-   * Find user by refresh token.
+   * Find user by refresh token hash.
    * @param token - Refresh token to search
    * @returns User object if found, null otherwise
    */
   async findByRefreshToken(token: string) {
-    const [user] = await db.select().from(users).where(eq(users.refreshToken, token)).limit(1);
+    const hash = hashToken(token);
+    const [user] = await db.select().from(users).where(eq(users.refreshTokenHash, hash)).limit(1);
     return user;
   }
 

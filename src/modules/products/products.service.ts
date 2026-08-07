@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { products, categories, orderItems } from '../../db/schema.js';
-import { eq, or, and, sql, count, desc, like } from 'drizzle-orm';
+import { eq, or, and, sql, count, desc, like, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type ListProductsQuery } from './products.schema.js';
@@ -10,6 +10,26 @@ import { type ListProductsQuery } from './products.schema.js';
  * Handles CRUD operations, search, filtering, and best sellers.
  */
 export class ProductsService {
+  private mapProductRow(row: any) {
+    return {
+      id: row.id,
+      category_id: row.category_id,
+      name: row.name,
+      slug: row.slug,
+      description: row.description,
+      price: row.price,
+      stock: row.stock,
+      image_url: row.image_url,
+      category: row.category_id ? {
+        name: row.category_name,
+        slug: row.category_slug,
+        description: row.category_description,
+      } : null,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
+  }
+
   /**
    * Get best seller products sorted by total quantity sold.
    * @param limit - Number of products to return (default: 5)
@@ -40,21 +60,7 @@ export class ProductsService {
     .limit(limit);
 
     return result.map(row => ({
-      id: row.id,
-      category_id: row.category_id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description,
-      price: row.price,
-      stock: row.stock,
-      image_url: row.image_url,
-      category: row.category_id ? {
-        name: row.category_name!,
-        slug: row.category_slug!,
-        description: row.category_description,
-      } : null,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+      ...this.mapProductRow(row),
       total_sold: Number(row.total_sold),
     }));
   }
@@ -70,7 +76,7 @@ export class ProductsService {
     const limit = query.limit || 10;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    let whereClause: SQL<unknown> | undefined = undefined;
 
     if (query.search) {
       // Use MATCH AGAINST for fulltext search
@@ -110,26 +116,8 @@ export class ProductsService {
     const total = totalResult[0]?.value || 0;
     const total_pages = Math.ceil(total / limit);
 
-    const mappedData = data.map(row => ({
-      id: row.id,
-      category_id: row.category_id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description,
-      price: row.price,
-      stock: row.stock,
-      image_url: row.image_url,
-      category: row.category_id ? {
-        name: row.category_name!,
-        slug: row.category_slug!,
-        description: row.category_description,
-      } : null,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    }));
-
     return {
-      data: mappedData,
+      data: data.map(row => this.mapProductRow(row)),
       meta: {
         total,
         page,
@@ -164,25 +152,7 @@ export class ProductsService {
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .where(eq(products.id, id)).limit(1);
 
-    if (!product) return undefined;
-
-    return {
-      id: product.id,
-      category_id: product.category_id,
-      name: product.name,
-      slug: product.slug,
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      image_url: product.image_url,
-      category: product.category_id ? {
-        name: product.category_name!,
-        slug: product.category_slug!,
-        description: product.category_description,
-      } : null,
-      created_at: product.created_at,
-      updated_at: product.updated_at,
-    };
+    return product ? this.mapProductRow(product) : undefined;
   }
 
   /**
@@ -210,25 +180,7 @@ export class ProductsService {
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .where(eq(products.slug, slug)).limit(1);
 
-    if (!product) return undefined;
-
-    return {
-      id: product.id,
-      category_id: product.category_id,
-      name: product.name,
-      slug: product.slug,
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      image_url: product.image_url,
-      category: product.category_id ? {
-        name: product.category_name!,
-        slug: product.category_slug!,
-        description: product.category_description,
-      } : null,
-      created_at: product.created_at,
-      updated_at: product.updated_at,
-    };
+    return product ? this.mapProductRow(product) : undefined;
   }
 
   /**
@@ -272,26 +224,8 @@ export class ProductsService {
     const total = totalResult[0]?.value || 0;
     const total_pages = Math.ceil(total / limit);
 
-    const mappedData = data.map(row => ({
-      id: row.id,
-      category_id: row.category_id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description,
-      price: row.price,
-      stock: row.stock,
-      image_url: row.image_url,
-      category: {
-        name: row.category_name,
-        slug: row.category_slug,
-        description: row.category_description,
-      },
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    }));
-
     return {
-      data: mappedData,
+      data: data.map(row => this.mapProductRow(row)),
       meta: { total, page, limit, total_pages },
     };
   }

@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, decimal, int, timestamp, index } from 'drizzle-orm/mysql-core';
+import { mysqlTable, mysqlEnum, varchar, text, decimal, int, timestamp, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
 export const users = mysqlTable('users', {
@@ -10,6 +10,7 @@ export const users = mysqlTable('users', {
   phoneNumber: varchar('phone_number', { length: 20 }),
   role: varchar('role', { length: 20 }).notNull().default('user'),
   refreshToken: varchar('refresh_token', { length: 255 }),
+  refreshTokenHash: varchar('refresh_token_hash', { length: 64 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });
@@ -61,7 +62,7 @@ export const orders = mysqlTable('orders', {
   id: varchar('id', { length: 26 }).primaryKey(),
   userId: varchar('user_id', { length: 26 }).references(() => users.id).notNull(),
   totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
-  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  status: mysqlEnum('status', ['pending', 'shipped', 'delivered', 'cancelled']).notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

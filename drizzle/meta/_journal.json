@@ -15,6 +15,20 @@
       "when": 1778951883724,
       "tag": "0001_peaceful_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786108800000,
+      "tag": "0002_add_refresh_token_hash",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786108801000,
+      "tag": "0003_order_status_enum",
+      "breakpoints": true
     }
   ]
 }

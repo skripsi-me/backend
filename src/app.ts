@@ -6,7 +6,6 @@ import swaggerPlugin from './plugins/swagger.plugin.js';
 import authPlugin from './plugins/auth.plugin.js';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
-import multipart from '@fastify/multipart';
 import { env } from './config/env.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { userRoutes } from './modules/users/user.routes.js';
@@ -33,6 +32,7 @@ export const buildApp = async () => {
             target: 'pino-pretty',
           },
         },
+    trustProxy: env.TRUST_PROXY,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   // Decorate Reply for standardized success response
@@ -81,12 +81,6 @@ export const buildApp = async () => {
     cookie: {
       cookieName: 'token',
       signed: true,
-    },
-  });
-
-  await app.register(multipart, {
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB
     },
   });
 

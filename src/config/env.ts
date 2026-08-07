@@ -33,6 +33,12 @@ const COOKIE_DOMAIN = optionalEnv('COOKIE_DOMAIN'); // optional: .example.com
 const COOKIE_PATH = optionalEnv('COOKIE_PATH', '/');
 const REFRESH_COOKIE_PATH = optionalEnv('REFRESH_COOKIE_PATH', '/api/auth/refresh');
 
+// CORS: comma-separated allowed origins (kosongkan untuk reflect semua di dev)
+const CORS_ORIGINS = optionalEnv('CORS_ORIGINS');
+
+// Trust proxy — aktifkan jika di belakang reverse proxy (Vercel, nginx)
+const TRUST_PROXY = optionalEnv('TRUST_PROXY', 'false') === 'true';
+
 export const env = {
   NODE_ENV: (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test',
   PORT: Number(optionalEnv('PORT', '3000')),
@@ -52,4 +58,6 @@ export const env = {
   IMAGEKIT_PUBLIC_KEY,
   IMAGEKIT_PRIVATE_KEY,
   IMAGEKIT_URL_ENDPOINT,
+  CORS_ORIGINS,
+  TRUST_PROXY,
 };

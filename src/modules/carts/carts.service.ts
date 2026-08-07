@@ -88,9 +88,13 @@ export class CartsService {
   async updateItem(userId: string, itemId: string, data: UpdateCartItemBody) {
     const cart = await this.getByUserId(userId);
     
-    await db.update(cartItems)
+    const result = await db.update(cartItems)
       .set({ quantity: data.quantity })
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)));
+      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id))) as any;
+
+    if (result.affectedRows === 0) {
+      throw new Error('Cart item not found');
+    }
 
     return this.getByUserId(userId);
   }
@@ -104,8 +108,12 @@ export class CartsService {
   async removeItem(userId: string, itemId: string) {
     const cart = await this.getByUserId(userId);
     
-    await db.delete(cartItems)
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)));
+    const result = await db.delete(cartItems)
+      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id))) as any;
+
+    if (result.affectedRows === 0) {
+      throw new Error('Cart item not found');
+    }
 
     return this.getByUserId(userId);
   }
