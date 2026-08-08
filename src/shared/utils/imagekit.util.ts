@@ -6,3 +6,12 @@ export const imagekit = new ImageKit({
   privateKey: env.IMAGEKIT_PRIVATE_KEY,
   urlEndpoint: env.IMAGEKIT_URL_ENDPOINT,
 });
+
+export const uploadImage = async (file: Buffer, fileName: string): Promise<string> => {
+  const result = await imagekit.upload({
+    file,
+    fileName,
+    folder: '/products',
+  });
+  return result.url;
+};

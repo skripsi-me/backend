@@ -1,7 +1,44 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { ProductsService } from './products.service.js';
-import { type ListProductsQuery, type GetBestSellersQuery, type CreateProductBody, type UpdateProductBody } from './products.schema.js';
+import { type ListProductsQuery, type GetBestSellersQuery } from './products.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
+import { uploadImage } from '../../shared/utils/imagekit.util.js';
+
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+function extractBodyFields(body: any): Record<string, any> {
+  if (!body) return {};
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (key === 'image') continue;
+    if (typeof value === 'object' && value !== null && 'value' in (value as any)) {
+      result[key] = (value as any).value;
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+async function processImageUpload(request: FastifyRequest): Promise<string | undefined> {
+  let file = await request.file();
+
+  if (!file) {
+    const bodyField = (request.body as any)?.image;
+    if (bodyField && typeof bodyField === 'object' && typeof bodyField.mimetype === 'string') {
+      file = bodyField;
+    }
+  }
+
+  if (!file) return undefined;
+
+  if (!ALLOWED_MIMES.includes(file.mimetype)) {
+    throw new Error(`Invalid file type: ${file.mimetype}. Allowed: ${ALLOWED_MIMES.join(', ')}`);
+  }
+
+  const buffer = await file.toBuffer();
+  return uploadImage(buffer, file.filename);
+}
 
 /**
  * Controller for product management endpoints.
@@ -77,9 +114,26 @@ export class ProductsController {
    * @param reply - Fastify reply
    * @returns 201 with created product
    */
-  async create(request: FastifyRequest<{ Body: CreateProductBody }>, reply: FastifyReply) {
-    const product = await this.productsService.create(request.body);
-    return reply.status(201).success(product);
+  async create(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const imageUrl = await processImageUpload(request);
+      const body = extractBodyFields(request.body);
+
+      if (!body.name || !body.price || body.stock === undefined || !body.category_id) {
+        return reply.status(400).send(formatError(400, 'Missing required fields: name, price, stock, category_id'));
+      }
+
+      const product = await this.productsService.create({
+        ...body,
+        price: Number(body.price),
+        stock: Number(body.stock),
+        image_url: imageUrl || body.image_url || null,
+      });
+      return reply.status(201).success(product);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      return reply.status(400).send(formatError(400, message));
+    }
   }
 
   /**
@@ -88,12 +142,22 @@ export class ProductsController {
    * @param reply - Fastify reply
    * @returns 200 with updated product or 404 if not found
    */
-  async update(request: FastifyRequest<{ Params: { id: string }; Body: UpdateProductBody }>, reply: FastifyReply) {
-    const product = await this.productsService.update(request.params.id, request.body);
-    if (!product) {
-      return reply.status(404).send(formatError(404, 'Product not found'));
+  async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const imageUrl = await processImageUpload(request);
+      const body = extractBodyFields(request.body);
+      const product = await this.productsService.update(request.params.id, {
+        ...body,
+        image_url: imageUrl || body.image_url,
+      });
+      if (!product) {
+        return reply.status(404).send(formatError(404, 'Product not found'));
+      }
+      return reply.success(product);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      return reply.status(400).send(formatError(400, message));
     }
-    return reply.success(product);
   }
 
   /**
