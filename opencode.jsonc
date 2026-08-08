@@ -1,6 +1,6 @@
 {
     "$schema": "https://opencode.ai/config.json",
-    "model": "opencode/mimo-v2.5-free",
+    "model": "deepseek/deepseek-v4-flash-0731",
     "lsp": true,
     "autoupdate": true,
     "instructions": [
@@ -11,7 +11,12 @@
     ],
     "mcp": {
         "mysql": {
-            "command": ["npx", "-y", "@f4ww4z/mcp-mysql-server", "mysql://khoican:basmalah123@localhost:3307/skripsi_db"],
+            "command": [
+                "npx",
+                "-y",
+                "@f4ww4z/mcp-mysql-server",
+                "mysql://khoican:basmalah123@localhost:3307/skripsi_db"
+            ],
             "type": "local",
             "enabled": true
         },
@@ -24,22 +29,42 @@
             "enabled": true
         },
         "filesystem": {
-            "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/home/khoican/project/skripsi/backend"],
+            "command": [
+                "npx",
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/home/khoican/project/skripsi/backend"
+            ],
             "type": "local",
             "enabled": true
         },
         "sequential-thinking": {
-            "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+            "command": [
+                "npx",
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ],
             "type": "local",
             "enabled": true
         },
         "memory": {
-            "command": ["docker", "run", "-i", "-v", "claude-memory:/app/dist", "--rm", "mcp/memory"],
+            "command": [
+                "docker",
+                "run",
+                "-i",
+                "-v",
+                "claude-memory:/app/dist",
+                "--rm",
+                "mcp/memory"
+            ],
             "type": "local",
             "enabled": true
         },
         "fetch": {
-            "command": ["npx", "mcp-fetch-server"],
+            "command": [
+                "npx",
+                "mcp-fetch-server"
+            ],
             "type": "local",
             "enabled": true
         }
