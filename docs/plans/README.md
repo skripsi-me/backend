@@ -22,6 +22,7 @@ Index semua plan perbaikan. Status diperbarui manual setelah eksekusi.
 | [009](009-register-safe-return.md) | Register return safe subset | done | rendah |
 | [010](010-dry-product-mapping.md) | DRY mapping produk | done | rendah |
 | [011](011-dev-workflow-ci.md) | Dev workflow: script lint/typecheck + CI | done | rendah |
+| [012](012-api-documentation.md) | Dokumentasi API untuk frontend | done | tinggi |
 
 ---
 
