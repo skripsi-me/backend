@@ -35,7 +35,11 @@ export class ProductsService {
    * @param limit - Number of products to return (default: 5)
    * @returns Array of products with total_sold field
    */
-  async getBestSellers(limit: number = 5) {
+  async getBestSellers(query: { page?: number; limit?: number } = {}) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const offset = (page - 1) * limit;
+
     const result = await db.select({
       id: products.id,
       category_id: products.categoryId,
@@ -57,7 +61,8 @@ export class ProductsService {
     .leftJoin(categories, eq(products.categoryId, categories.id))
     .groupBy(products.id)
     .orderBy(desc(sql`SUM(${orderItems.quantity})`))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 
     return result.map(row => ({
       ...this.mapProductRow(row),
@@ -73,7 +78,7 @@ export class ProductsService {
    */
   async list(query: ListProductsQuery) {
     const page = query.page || 1;
-    const limit = query.limit || 10;
+    const limit = query.limit || 20;
     const offset = (page - 1) * limit;
 
     let whereClause: SQL<unknown> | undefined = undefined;
@@ -191,7 +196,7 @@ export class ProductsService {
    */
   async listByCategorySlug(categorySlug: string, query: { page?: number; limit?: number }) {
     const page = query.page || 1;
-    const limit = query.limit || 10;
+    const limit = query.limit || 20;
     const offset = (page - 1) * limit;
 
     const [data, totalResult] = await Promise.all([

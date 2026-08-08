@@ -1,5 +1,6 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
+import { PaginationQuerySchema, PaginationMetaSchema } from '../../shared/schemas/pagination.schema.js';
 
 /** Base schema for user object */
 export const UserSchema = Type.Object({
@@ -13,8 +14,12 @@ export const UserSchema = Type.Object({
 
 /** Schema for listing all users (admin only) */
 export const GetUsersSchema = {
+  query: PaginationQuerySchema,
   response: {
-    200: createStandardResponseSchema(Type.Array(UserSchema)),
+    200: createStandardResponseSchema(Type.Object({
+      data: Type.Array(UserSchema),
+      meta: PaginationMetaSchema,
+    })),
   },
 };
 

@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { users } from '../../db/schema.js';
-import { eq, ne, and } from 'drizzle-orm';
+import { eq, ne, and, count } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword } from '../../shared/utils/hash.util.js';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
@@ -15,15 +15,30 @@ export class UserService {
    * Get all users (admin only).
    * @returns Array of user objects
    */
-  async getAll() {
-    return db.select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      address: users.address,
-      phone_number: users.phoneNumber,
-      role: users.role,
-    }).from(users);
+  async getAll(query: { page?: number; limit?: number } = {}) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const [data, totalResult] = await Promise.all([
+      db.select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        address: users.address,
+        phone_number: users.phoneNumber,
+        role: users.role,
+      }).from(users).limit(limit).offset(offset),
+      db.select({ value: count() }).from(users),
+    ]);
+
+    const total = totalResult[0]?.value || 0;
+    const total_pages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: { total, page, limit, total_pages },
+    };
   }
 
   /**

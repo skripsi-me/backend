@@ -16,9 +16,9 @@ export class UserController {
    * @param reply - Fastify reply
    * @returns 200 with array of users
    */
-  async getAll(_request: FastifyRequest, reply: FastifyReply) {
-    const users = await this.userService.getAll();
-    return reply.success(users, 'Users retrieved successfully');
+  async getAll(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+    const result = await this.userService.getAll(request.query);
+    return reply.success(result, 'Users retrieved successfully');
   }
 
   /**

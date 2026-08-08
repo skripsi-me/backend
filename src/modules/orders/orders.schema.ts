@@ -1,5 +1,6 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
+import { PaginationQuerySchema, PaginationMetaSchema } from '../../shared/schemas/pagination.schema.js';
 
 /** Schema for a single order item */
 export const OrderItemSchema = Type.Object({
@@ -25,8 +26,12 @@ export const OrderSchema = Type.Object({
 
 /** Schema for listing orders (admin sees all, user sees own) */
 export const ListOrdersSchema = {
+  query: PaginationQuerySchema,
   response: {
-    200: createStandardResponseSchema(Type.Array(OrderSchema)),
+    200: createStandardResponseSchema(Type.Object({
+      data: Type.Array(OrderSchema),
+      meta: PaginationMetaSchema,
+    })),
   },
 };
 

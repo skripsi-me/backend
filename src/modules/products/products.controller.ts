@@ -17,8 +17,7 @@ export class ProductsController {
    * @returns 200 with array of best seller products
    */
   async getBestSellers(request: FastifyRequest<{ Querystring: GetBestSellersQuery }>, reply: FastifyReply) {
-    const limit = request.query.limit || 5;
-    const products = await this.productsService.getBestSellers(limit);
+    const products = await this.productsService.getBestSellers(request.query);
     return reply.success(products);
   }
 

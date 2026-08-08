@@ -110,7 +110,7 @@ describe('Orders Module', () => {
       url: '/api/orders/me',
       cookies: { token: userCookie },
     });
-    const orderId = JSON.parse(ordersList.body).data[0].id;
+    const orderId = JSON.parse(ordersList.body).data.data[0].id;
 
     const response = await app.inject({
       method: 'PATCH',

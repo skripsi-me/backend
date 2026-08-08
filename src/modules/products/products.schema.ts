@@ -1,5 +1,6 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
+import { PaginationQuerySchema, PaginationMetaSchema, MAX_LIMIT, DEFAULT_LIMIT } from '../../shared/schemas/pagination.schema.js';
 
 /** Schema for category object within product */
 export const ProductCategorySchema = Type.Object({
@@ -25,21 +26,14 @@ export const ProductSchema = Type.Object({
 
 /** Schema for listing products with pagination, search, and category filter */
 export const ListProductsSchema = {
-  query: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 10, description: 'Items per page' })),
+  query: Type.Composite([PaginationQuerySchema, Type.Object({
     search: Type.Optional(Type.String({ description: 'Search term for name or description' })),
     category_id: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
-  }),
+  })]),
   response: {
     200: createStandardResponseSchema(Type.Object({
       data: Type.Array(ProductSchema),
-      meta: Type.Object({
-        total: Type.Number({ description: 'Total number of items' }),
-        page: Type.Number({ description: 'Current page number' }),
-        limit: Type.Number({ description: 'Items per page' }),
-        total_pages: Type.Number({ description: 'Total number of pages' }),
-      }),
+      meta: PaginationMetaSchema,
     })),
   },
 };
@@ -69,19 +63,11 @@ export const ListProductsByCategorySchema = {
   params: Type.Object({
     categorySlug: Type.String({ description: 'Category slug' }),
   }),
-  query: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 10, description: 'Items per page' })),
-  }),
+  query: PaginationQuerySchema,
   response: {
     200: createStandardResponseSchema(Type.Object({
       data: Type.Array(ProductSchema),
-      meta: Type.Object({
-        total: Type.Number({ description: 'Total number of items' }),
-        page: Type.Number({ description: 'Current page number' }),
-        limit: Type.Number({ description: 'Items per page' }),
-        total_pages: Type.Number({ description: 'Total number of pages' }),
-      }),
+      meta: PaginationMetaSchema,
     })),
   },
 };
@@ -142,7 +128,8 @@ export const BestSellerProductSchema = Type.Intersect([
 /** Schema for getting best seller products */
 export const GetBestSellersSchema = {
   query: Type.Object({
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 50, default: 5, description: 'Number of products to show' })),
+    page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
+    limit: Type.Optional(Type.Number({ minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: 'Number of products to show' })),
   }),
   response: {
     200: createStandardResponseSchema(Type.Array(BestSellerProductSchema)),

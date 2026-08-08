@@ -79,8 +79,13 @@ describe('User Module', () => {
 
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);
-    expect(Array.isArray(body.data)).toBe(true);
-    expect(body.data.length).toBeGreaterThanOrEqual(2);
+    expect(body.metadata.code).toBe(200);
+    expect(Array.isArray(body.data.data)).toBe(true);
+    expect(body.data.data.length).toBeGreaterThanOrEqual(2);
+    expect(body.data.meta).toHaveProperty('total');
+    expect(body.data.meta).toHaveProperty('page');
+    expect(body.data.meta).toHaveProperty('limit');
+    expect(body.data.meta).toHaveProperty('total_pages');
   });
 
   it('should fail to list all users if not admin', async () => {

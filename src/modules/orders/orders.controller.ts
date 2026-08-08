@@ -61,10 +61,10 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with array of orders
    */
-  async listMine(request: FastifyRequest, reply: FastifyReply) {
+  async listMine(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
     const userId = request.user.id;
-    const orders = await this.ordersService.listByUser(userId);
-    return reply.success(orders);
+    const result = await this.ordersService.listByUser(userId, request.query);
+    return reply.success(result);
   }
 
   /**
@@ -94,9 +94,9 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with array of orders
    */
-  async listAll(_request: FastifyRequest, reply: FastifyReply) {
-    const orders = await this.ordersService.listAll();
-    return reply.success(orders);
+  async listAll(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+    const result = await this.ordersService.listAll(request.query);
+    return reply.success(result);
   }
 
   /**

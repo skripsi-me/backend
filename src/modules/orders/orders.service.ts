@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { orders, orderItems, cartItems, products, users } from '../../db/schema.js';
-import { eq, sql, desc, and, gte, lte } from 'drizzle-orm';
+import { eq, sql, desc, and, gte, lte, count } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { CartsService } from '../carts/carts.service.js';
 
@@ -149,34 +149,66 @@ export class OrdersService {
    * @param userId - User ULID
    * @returns Array of order objects
    */
-  async listByUser(userId: string) {
-    return db.select({
-      id: orders.id,
-      user_id: orders.userId,
-      total_amount: orders.totalAmount,
-      status: orders.status,
-      created_at: orders.createdAt,
-    }).from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
+  async listByUser(userId: string, query: { page?: number; limit?: number } = {}) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const [data, totalResult] = await Promise.all([
+      db.select({
+        id: orders.id,
+        user_id: orders.userId,
+        total_amount: orders.totalAmount,
+        status: orders.status,
+        created_at: orders.createdAt,
+      }).from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt)).limit(limit).offset(offset),
+      db.select({ value: count() }).from(orders).where(eq(orders.userId, userId)),
+    ]);
+
+    const total = totalResult[0]?.value || 0;
+    const total_pages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: { total, page, limit, total_pages },
+    };
   }
 
   /**
    * List all orders with user email (admin only).
    * @returns Array of order objects with user info
    */
-  async listAll() {
-    return db.select({
-      id: orders.id,
-      user_id: orders.userId,
-      total_amount: orders.totalAmount,
-      status: orders.status,
-      created_at: orders.createdAt,
-      user: {
-        email: users.email
-      }
-    })
-    .from(orders)
-    .innerJoin(users, eq(orders.userId, users.id))
-    .orderBy(desc(orders.createdAt));
+  async listAll(query: { page?: number; limit?: number } = {}) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const [data, totalResult] = await Promise.all([
+      db.select({
+        id: orders.id,
+        user_id: orders.userId,
+        total_amount: orders.totalAmount,
+        status: orders.status,
+        created_at: orders.createdAt,
+        user: {
+          email: users.email
+        }
+      })
+      .from(orders)
+      .innerJoin(users, eq(orders.userId, users.id))
+      .orderBy(desc(orders.createdAt))
+      .limit(limit)
+      .offset(offset),
+      db.select({ value: count() }).from(orders),
+    ]);
+
+    const total = totalResult[0]?.value || 0;
+    const total_pages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: { total, page, limit, total_pages },
+    };
   }
 
   /**
