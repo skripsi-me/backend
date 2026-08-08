@@ -13,6 +13,7 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 - **JWT HttpOnly Cookies** — Token tidak dapat diakses oleh JavaScript (mencegah XSS)
 - **Signed Cookies** — Cookie ditandatangani dengan `COOKIE_SECRET` (mencegah manipulasi)
 - **Refresh Token Rotation** — Refresh token di-rotate setiap kali digunakan. Token lama otomatis invalid.
+- **Refresh Token Hash** — Refresh token disimpan sebagai SHA-256 hash di `users.refresh_token_hash`. Reuse token lama → 401 + log.
 - **bcrypt** — Password di-hash dengan 10 salt rounds
 
 ### Otorisasi
@@ -28,7 +29,7 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 - **Helmet** — Security headers (CSP, HSTS, dll)
 - **CORS** — Cross-Origin Resource Sharing dikonfigurasi
 - **MariaDB** — Hanya bind ke `127.0.0.1` (tidak exposed ke luar)
-- **Multipart Limits** — Upload file dibatasi 5MB
+- **Multipart Limits** — Upload file dibatasi 5MB, hanya tipe gambar `image/jpeg`, `image/png`, `image/webp`, `image/gif`
 
 ### Data
 
@@ -42,7 +43,7 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 
 - Cookie-based auth tidak mendukung perangkat mobile native (perlu adaptasi Bearer token)
 - Swagger UI menampilkan `bearerAuth` sebagai opsi, namun implementasi hanya mendukung cookie-based auth
-- CSRF protection mengandalkan `sameSite: 'strict'` (belum ada double-submit cookie)
+- CSRF protection mengandalkan `sameSite: 'lax'` (default) atau `strict` — belum ada double-submit cookie
 - Rate limiting menggunakan in-memory store (tidak distributed)
 - Tidak ada brute-force protection pada login endpoint
 

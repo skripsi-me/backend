@@ -1,6 +1,6 @@
 import { Type, type Static } from '@sinclair/typebox';
+import { DEFAULT_LIMIT, MAX_LIMIT, PaginationMetaSchema, PaginationQuerySchema } from '../../shared/schemas/pagination.schema.js';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
-import { PaginationQuerySchema, PaginationMetaSchema, MAX_LIMIT, DEFAULT_LIMIT } from '../../shared/schemas/pagination.schema.js';
 
 /** Schema for category object within product */
 export const ProductCategorySchema = Type.Object({
@@ -16,7 +16,7 @@ export const ProductSchema = Type.Object({
   name: Type.String({ description: 'Product name' }),
   slug: Type.String({ description: 'URL-friendly product name' }),
   description: Type.Union([Type.String(), Type.Null()], { description: 'Product description' }),
-  price: Type.String({ description: 'Product price (decimal string)' }),
+  price: Type.Number({ description: 'Product price' }),
   stock: Type.Number({ description: 'Available stock quantity' }),
   image_url: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
   category: Type.Optional(Type.Union([ProductCategorySchema, Type.Null()], { description: 'Category details' })),

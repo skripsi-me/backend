@@ -162,8 +162,16 @@ pm2 delete ecommerce-api   # Hapus
 | `DATABASE_USER` | Yes | - | Username DB |
 | `DATABASE_PASSWORD` | Yes | - | Password DB |
 | `DATABASE_NAME` | Yes | - | Nama database |
+| `DATABASE_ROOT_PASSWORD` | No | `root_sandi_skripsi_aman` | Root password MariaDB (hanya Docker) |
 | `JWT_SECRET` | Yes | - | Secret key JWT |
 | `COOKIE_SECRET` | Yes | - | Secret key cookies |
+| `COOKIE_SAMESITE` | No | `lax` | SameSite policy (`strict`/`lax`/`none`) |
+| `COOKIE_SECURE` | No | `false` | Cookie hanya via HTTPS |
+| `COOKIE_DOMAIN` | No | - | Domain scope cookie |
+| `COOKIE_PATH` | No | `/` | Path access token |
+| `REFRESH_COOKIE_PATH` | No | `/api/auth/refresh` | Path refresh token |
+| `CORS_ORIGINS` | No | reflect semua (dev) | Comma-separated allowed origins |
+| `TRUST_PROXY` | No | `false` | `true` jika di belakang reverse proxy |
 | `IMAGEKIT_PUBLIC_KEY` | Yes | - | ImageKit public key |
 | `IMAGEKIT_PRIVATE_KEY` | Yes | - | ImageKit private key |
 | `IMAGEKIT_URL_ENDPOINT` | Yes | - | ImageKit URL endpoint |
@@ -183,6 +191,14 @@ DATABASE_NAME=skripsi_db
 
 JWT_SECRET=<random_hex_32_chars>
 COOKIE_SECRET=<random_hex_32_chars>
+
+COOKIE_SAMESITE=lax
+COOKIE_SECURE=true
+COOKIE_PATH=/
+REFRESH_COOKIE_PATH=/api/auth/refresh
+
+CORS_ORIGINS=https://your-frontend.com
+TRUST_PROXY=true
 
 IMAGEKIT_PUBLIC_KEY=public_xxx
 IMAGEKIT_PRIVATE_KEY=private_xxx
@@ -328,7 +344,7 @@ git pull origin main
 pnpm install
 
 # Build
-npm run run build
+npm run build
 
 # Sync schema (jika ada perubahan)
 npx drizzle-kit push

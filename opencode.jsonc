@@ -5,9 +5,8 @@
     "autoupdate": true,
     "instructions": [
         "AGENTS.md",
-        "docs/api-guidelines.md",
-        "docs/database-schema.md",
-        "src/db/schema/**/*.ts"
+        "docs/API.md",
+        "src/db/schema.ts"
     ],
     "mcp": {
         "mysql": {

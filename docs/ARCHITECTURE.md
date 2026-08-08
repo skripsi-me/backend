@@ -261,6 +261,7 @@ erDiagram
         varchar phone_number
         varchar role "default: user"
         varchar refresh_token
+        varchar refresh_token_hash "sha256 hash refresh token"
         timestamp created_at
         timestamp updated_at
     }

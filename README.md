@@ -13,7 +13,7 @@ Backend API untuk aplikasi e-commerce yang dibangun dengan Fastify 5, Drizzle OR
 | Autentikasi | JWT + HttpOnly Cookies (Signed) |
 | ID | ULID (26 karakter) |
 | Media | ImageKit.io SDK |
-| Rate Limit | 20 request/detik per IP |
+| Rate Limit | 100 request/menit per IP (auth: 3/5/10 per menit) |
 | API Docs | Swagger UI (`/docs`) |
 
 ## Format Response Standar
@@ -198,10 +198,9 @@ Pastikan environment variables di production sudah dikonfigurasi dengan benar (l
 
 ## Dokumentasi Lainnya
 
-- `docs/API_REFERENCE.md` — Referensi API lengkap untuk frontend
+- `docs/API.md` — Referensi API lengkap (request/response, error, pagination)
 - `docs/ARCHITECTURE.md` — Arsitektur dan desain sistem
 - `docs/ENVIRONMENT.md` — Konfigurasi environment variables
-- `docs/RESPONSE.md` — Contoh request/response API
 - `docs/SECURITY.md` — Kebijakan keamanan
 - `http://localhost:3000/docs` — Swagger UI (otomatis)
 

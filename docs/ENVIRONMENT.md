@@ -12,7 +12,7 @@ cp .env.example .env
 # 3. Validasi otomatis dijalankan saat startup aplikasi
 ```
 
-Jika ada variabel yang tidak valid atau tidak diisi, aplikasi akan otomatis berhenti (`process.exit(1)`) dan menampilkan pesan error.
+Jika ada variabel yang tidak valid atau tidak diisi, aplikasi akan melempar error saat startup (`src/config/env.ts`) dan menampilkan pesan error.
 
 ## Variabel Aplikasi
 
@@ -57,6 +57,16 @@ Docker Compose juga menggunakan variabel berikut secara tidak langsung:
   ```bash
   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   ```
+
+## Variabel Cookie
+
+| Variabel | Required | Default | Deskripsi |
+|----------|----------|---------|-----------|
+| `COOKIE_SAMESITE` | No | `lax` | SameSite policy cookie: `strict`, `lax`, atau `none` |
+| `COOKIE_SECURE` | No | `false` | Cookie hanya dikirim via HTTPS (wajib `true` di production) |
+| `COOKIE_DOMAIN` | No | - | Domain scope cookie (contoh: `.example.com` untuk subdomain sharing) |
+| `COOKIE_PATH` | No | `/` | Path scope access token |
+| `REFRESH_COOKIE_PATH` | No | `/api/auth/refresh` | Path scope refresh token (dibatasi ke endpoint refresh) |
 
 ## Variabel ImageKit
 
@@ -118,6 +128,12 @@ DATABASE_NAME=skripsi_db
 JWT_SECRET=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
 COOKIE_SECRET=z6y5x4w3v2u1t0s9r8q7p6o5n4m3l2k1j0i9h8g7f6e5d4c3b2a1
 
+# === Cookie Configuration ===
+COOKIE_SAMESITE=lax
+COOKIE_SECURE=false
+COOKIE_PATH=/
+REFRESH_COOKIE_PATH=/api/auth/refresh
+
 # === ImageKit ===
 IMAGEKIT_PUBLIC_KEY=public_xxxxxxxxxxxxxxxxxxxx
 IMAGEKIT_PRIVATE_KEY=private_xxxxxxxxxxxxxxxxxxxx
@@ -134,7 +150,7 @@ TRUST_PROXY=true
 
 ### "Invalid environment variables" saat startup
 
-Aplikasi melakukan validasi menggunakan TypeBox saat pertama kali dijalankan. Pastikan:
+Aplikasi melakukan validasi manual di `src/config/env.ts` saat pertama kali dijalankan. Pastikan:
 
 1. Semua variabel required sudah diisi
 2. `PORT` dan `DATABASE_PORT` berupa angka

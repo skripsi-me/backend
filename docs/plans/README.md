@@ -17,12 +17,14 @@ Index semua plan perbaikan. Status diperbarui manual setelah eksekusi.
 | [004](004-trust-proxy.md) | trustProxy untuk proxy/Vercel | done | sedang |
 | [005](005-refresh-token-hash.md) | Refresh token hash storage | done | sedang |
 | [006](006-order-status-enum.md) | Order status MySQL ENUM | done | rendah |
-| [007](007-type-safety-whereclause.md) | Type safety products.list whereClause | done | rendah |
-| [008](008-dead-code-cleanup.md) | Bersihkan dead code | done | rendah |
+| [007](007-type-safety-whereclause.md) | Type safety products.list whereClause | partial | rendah |
+| [008](008-dead-code-cleanup.md) | Bersihkan dead code | partial | rendah |
 | [009](009-register-safe-return.md) | Register return safe subset | done | rendah |
 | [010](010-dry-product-mapping.md) | DRY mapping produk | done | rendah |
-| [011](011-dev-workflow-ci.md) | Dev workflow: script lint/typecheck + CI | done | rendah |
+| [011](011-dev-workflow-ci.md) | Dev workflow: script lint/typecheck + CI | partial | rendah |
 | [012](012-api-documentation.md) | Dokumentasi API untuk frontend | done | tinggi |
+| [013](013-docs-sync.md) | Sinkronisasi dokumentasi dengan kode | done | tinggi |
+| [014](014-ci-enable-compose.md) | Aktifkan CI + fix MYSQL_USER=root | pending | tinggi |
 
 ---
 
@@ -37,5 +39,5 @@ Tinggi (001-002) → Sedang (003-005) → Rendah (006-011)
 ## Referensi
 
 - [Assessment awal](../ARCHITECTURE.md) — temuan yang jadi dasar plan ini
-- [API Reference](../API_REFERENCE.md) — endpoint yang terpengaruh
+- [API Reference](../API.md) — endpoint yang terpengaruh
 - [Environment Config](../ENVIRONMENT.md) — env vars yang perlu ditambah

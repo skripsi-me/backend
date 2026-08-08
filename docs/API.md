@@ -1,5 +1,7 @@
 # Dokumentasi API — E-Commerce Backend
 
+> **Canonical source**: Dokumen ini adalah satu-satunya referensi API resmi. Update saat schema/endpoint berubah.
+
 > Base URL: `http://localhost:3000` (development)  
 > Base URL Production: `https://<your-domain>` (sesuaikan)
 
@@ -160,11 +162,13 @@ Field `error` berisi object dengan key berupa path field yang salah dan value be
 
 ### Conflict Error
 
+> Contoh: admin membuat user dengan email yang sudah terdaftar (`POST /api/users`).
+
 ```json
 {
   "metadata": {
     "code": 409,
-    "message": "Email already registered"
+    "message": "Email already exists"
   }
 }
 ```
@@ -303,7 +307,9 @@ Content-Type: application/json
     "name": "Budi Santoso",
     "address": "Jl. Sudirman No. 123, Jakarta",
     "phone_number": "081234567890",
-    "role": "user"
+    "role": "user",
+    "created_at": "2026-01-01T00:00:00.000Z",
+    "updated_at": "2026-01-01T00:00:00.000Z"
   }
 }
 ```
@@ -314,8 +320,7 @@ Content-Type: application/json
 |---|---|---|
 | 400 | Email format salah | `Validation Error` |
 | 400 | Password kurang dari 8 karakter | `Validation Error` |
-| 403 | Non-admin coba register sebagai admin | `Only admins can create admin accounts` |
-| 409 | Email sudah terdaftar | `Email already registered` |
+| 403 | Non-admin coba register sebagai admin | `Only admins can register admin accounts` |
 
 ---
 
@@ -491,7 +496,7 @@ Cookie: token=<signed-token>
 
 | Code | Kondisi | Message |
 |---|---|---|
-| 400 | Password lama salah | `Old password is incorrect` |
+| 400 | Password lama salah | `Invalid old password` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 
 ---
@@ -779,7 +784,7 @@ Cookie: token=<admin-signed-token>
 | 400 | Validation error | `Validation Error` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
-| 409 | Email sudah terdaftar | `Email already registered` |
+| 409 | Email sudah terdaftar | `Email already exists` |
 
 ---
 
@@ -847,7 +852,6 @@ Cookie: token=<admin-signed-token>
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
 | 404 | User tidak ditemukan | `User not found` |
-| 409 | Email sudah dipakai user lain | `Email already in use` |
 
 ---
 
@@ -891,7 +895,6 @@ Cookie: token=<admin-signed-token>
 |---|---|---|
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
-| 404 | User tidak ditemukan | `User not found` |
 
 ---
 
@@ -1157,7 +1160,6 @@ Cookie: token=<admin-signed-token>
 |---|---|---|
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
-| 404 | Kategori tidak ditemukan | `Category not found` |
 
 ---
 
@@ -1180,7 +1182,8 @@ Mendapatkan produk terlaris berdasarkan total quantity terjual.
 
 | Param | Tipe | Default | Keterangan |
 |---|---|---|---|
-| `limit` | number | `5` | Jumlah produk (default 5) |
+| `page` | number | `1` | Nomor halaman |
+| `limit` | number | `20` | Jumlah produk (default 20) |
 
 **Contoh Request:**
 
@@ -1713,7 +1716,6 @@ Cookie: token=<admin-signed-token>
 |---|---|---|
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
-| 404 | Produk tidak ditemukan | `Product not found` |
 
 ---
 
@@ -1851,7 +1853,6 @@ Cookie: token=<signed-token>
 
 | Code | Kondisi | Message |
 |---|---|---|
-| 400 | Produk tidak ada atau stok kurang | `Product not found or insufficient stock` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 
 ---
@@ -1919,7 +1920,6 @@ Cookie: token=<signed-token>
 
 | Code | Kondisi | Message |
 |---|---|---|
-| 400 | Stok tidak mencukupi | `Insufficient stock` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 404 | Item tidak ditemukan | `Cart item not found` |
 
@@ -1991,8 +1991,8 @@ Mendapatkan laporan order harian (admin only).
 
 | Param | Tipe | Default | Keterangan |
 |---|---|---|---|
-| `start_date` | string | 1 bulan lalu | Format: `YYYY-MM-DD` |
-| `end_date` | string | hari ini | Format: `YYYY-MM-DD` |
+| `start_date` | string | tanggal 1 bulan berjalan | Format: `YYYY-MM-DD` |
+| `end_date` | string | akhir bulan berjalan | Format: `YYYY-MM-DD` |
 
 **Contoh Request:**
 
@@ -2019,11 +2019,6 @@ Cookie: token=<admin-signed-token>
       "date": "2026-01-16",
       "total_amount": 25000000,
       "order_count": 2
-    },
-    {
-      "date": "2026-01-17",
-      "total_amount": 0,
-      "order_count": 0
     }
   ]
 }
@@ -2091,7 +2086,7 @@ Cookie: token=<signed-token>
 | Code | Kondisi | Message |
 |---|---|---|
 | 400 | Keranjang kosong | `Cart is empty` |
-| 400 | Stok tidak mencukupi | `Insufficient stock for product: <name>` |
+| 400 | Stok tidak mencukupi | `Insufficient stock for <name>. Available: <n>, requested: <n>` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 
 ---
@@ -2370,7 +2365,6 @@ Cookie: token=<admin-signed-token>
 
 | Code | Kondisi | Message |
 |---|---|---|
-| 400 | Status tidak valid | `Invalid status value` |
+| 400 | Status tidak valid (validasi enum schema) | `Validation Error` |
 | 401 | Token tidak ada/invalid | `Invalid or missing token` |
 | 403 | Bukan admin | `Admin access required` |
-| 404 | Order tidak ditemukan | `Order not found` |

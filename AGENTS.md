@@ -60,4 +60,4 @@ Routes register at prefixes defined in `src/app.ts` (e.g., `/api/auth`, `/api/pr
 - `bcrypt` and `esbuild` require native builds — pnpm `onlyBuiltDependencies` allows them.
 - `docker-compose.yml` binds MariaDB to `127.0.0.1` only (not exposed externally).
 - Products search uses MySQL `MATCH AGAINST` (FULLTEXT) — requires indexes from `scripts/setup-fulltext.js`.
-- `pnpm-lock.yaml` is gitignored — run `pnpm install` after clone.
+- `pnpm-lock.yaml` is tracked in git — use `pnpm install --frozen-lockfile` (CI does this) or plain `pnpm install` locally.

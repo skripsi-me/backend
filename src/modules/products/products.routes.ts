@@ -23,7 +23,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       ...GetBestSellersSchema,
       tags: ['Products'],
       summary: 'Get best seller products',
-      description: 'Returns a list of products ordered by total quantity sold. Default limit is 5.',
+      description: 'Returns a list of products ordered by total quantity sold. Default limit is 20.',
     }
   }, productsController.getBestSellers.bind(productsController) as any);
 
