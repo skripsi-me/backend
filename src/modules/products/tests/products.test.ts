@@ -243,4 +243,27 @@ describe('Products Module', () => {
     const body = JSON.parse(response.body);
     expect(body.metadata.message).toContain('Invalid file type');
   });
+
+  it('should truncate long slug and be accessible by slug', async () => {
+    const longName = 'Sus Kering Coklat Lumer Enak '.repeat(12).trim();
+    const create = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: longName, price: 10000, stock: 5, category_id: categoryId },
+    });
+
+    expect(create.statusCode).toBe(201);
+    const created = JSON.parse(create.body);
+    expect(created.data.slug.length).toBeLessThanOrEqual(100);
+
+    const get = await app.inject({
+      method: 'GET',
+      url: `/api/products/slug/${created.data.slug}`,
+    });
+
+    expect(get.statusCode).toBe(200);
+
+    await db.delete(products).where(eq(products.id, created.data.id));
+  });
 });

@@ -1170,6 +1170,8 @@ Prefix: `/api/products`
 
 > **Catatan**: Endpoint GET bersifat publik. Endpoint POST, PATCH, DELETE memerlukan adminOnly. POST dan PATCH mendukung `multipart/form-data` untuk upload gambar.
 
+> **Slug**: Di-generate otomatis dari `name` dan di-truncate maksimal 100 karakter. Route param slug mendukung hingga 255 karakter (`maxParamLength`).
+
 ---
 
 ### `GET /api/products/best-sellers`

@@ -34,6 +34,7 @@ export const buildApp = async () => {
           },
         },
     trustProxy: env.TRUST_PROXY,
+    maxParamLength: 255,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   // Decorate Reply for standardized success response
@@ -51,8 +52,11 @@ export const buildApp = async () => {
       const validationErrors: Record<string, string> = {};
       error.validation.forEach((err: any) => {
         // Extract the field name from instancePath or params
-        const field = err.instancePath.replace(/^\//, '') || 
-                     (err.params && 'missingProperty' in err.params ? String(err.params.missingProperty) : 'unknown');
+        const field =
+          err.instancePath.replace(/^\//, '') ||
+          (err.params && 'missingProperty' in err.params
+            ? String(err.params.missingProperty)
+            : 'unknown');
         validationErrors[field] = err.message || 'Invalid value';
       });
 
@@ -71,7 +75,7 @@ export const buildApp = async () => {
   await app.register(securityPlugin);
   await app.register(rateLimitPlugin);
   await app.register(swaggerPlugin);
-  
+
   await app.register(cookie, {
     secret: env.COOKIE_SECRET,
     hook: 'onRequest',
