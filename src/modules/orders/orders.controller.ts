@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { OrdersService } from './orders.service.js';
-import { type UpdateOrderStatusBody } from './orders.schema.js';
+import { type UpdateOrderStatusBody, type ListOrdersQuery } from './orders.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 /**
@@ -61,7 +61,7 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with array of orders
    */
-  async listMine(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+  async listMine(request: FastifyRequest<{ Querystring: ListOrdersQuery }>, reply: FastifyReply) {
     const userId = request.user.id;
     const result = await this.ordersService.listByUser(userId, request.query);
     return reply.success(result);
@@ -76,7 +76,7 @@ export class OrdersController {
   async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const { id: userId, role } = request.user;
     const order = await this.ordersService.getById(request.params.id);
-    
+
     if (!order) {
       return reply.status(404).send(formatError(404, 'Order not found'));
     }
@@ -94,7 +94,7 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with array of orders
    */
-  async listAll(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+  async listAll(request: FastifyRequest<{ Querystring: ListOrdersQuery }>, reply: FastifyReply) {
     const result = await this.ordersService.listAll(request.query);
     return reply.success(result);
   }
@@ -105,7 +105,10 @@ export class OrdersController {
    * @param reply - Fastify reply
    * @returns 200 with updated order
    */
-  async updateStatus(request: FastifyRequest<{ Params: { id: string }; Body: UpdateOrderStatusBody }>, reply: FastifyReply) {
+  async updateStatus(
+    request: FastifyRequest<{ Params: { id: string }; Body: UpdateOrderStatusBody }>,
+    reply: FastifyReply,
+  ) {
     const order = await this.ordersService.updateStatus(request.params.id, request.body.status);
     return reply.success(order);
   }

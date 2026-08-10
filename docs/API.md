@@ -622,11 +622,12 @@ Mendapatkan daftar semua user (admin only, dengan pagination).
 |---|---|---|---|
 | `page` | number | `1` | Nomor halaman |
 | `limit` | number | `20` | Item per halaman |
+| `sort` | string | `desc` | Urutan sort berdasarkan `created_at`. Nilai: `asc` (terlama dulu) atau `desc` (terbaru dulu) |
 
 **Contoh Request:**
 
 ```json
-GET /api/users/?page=1&limit=10
+GET /api/users/?page=1&limit=10&sort=asc
 Cookie: token=<admin-signed-token>
 ```
 
@@ -1239,11 +1240,12 @@ Mendapatkan daftar produk dengan pagination, pencarian, dan filter.
 | `limit` | number | `20` | Item per halaman |
 | `search` | string | - | Kata kunci pencarian (pada name/description) |
 | `category_id` | string | - | Filter berdasarkan ID kategori |
+| `sort` | string | `desc` | Urutan sort berdasarkan `created_at`. Nilai: `asc` (terlama dulu) atau `desc` (terbaru dulu) |
 
 **Contoh Request:**
 
 ```json
-GET /api/products/?page=1&limit=10&search=iphone&category_id=01HXYZ123456789ABCDEFGHIJN
+GET /api/products/?page=1&limit=10&search=iphone&category_id=01HXYZ123456789ABCDEFGHIJN&sort=asc
 ```
 
 **Response 200 Success:**
@@ -1418,11 +1420,12 @@ Mendapatkan produk berdasarkan slug kategori.
 |---|---|---|---|
 | `page` | number | `1` | Nomor halaman |
 | `limit` | number | `20` | Item per halaman |
+| `sort` | string | `desc` | Urutan sort berdasarkan `created_at`. Nilai: `asc` (terlama dulu) atau `desc` (terbaru dulu) |
 
 **Contoh Request:**
 
 ```json
-GET /api/products/category/elektronik?page=1&limit=5
+GET /api/products/category/elektronik?page=1&limit=5&sort=asc
 ```
 
 **Response 200 Success:**
@@ -2104,11 +2107,13 @@ Mendapatkan daftar order user yang sedang login.
 |---|---|---|---|
 | `page` | number | `1` | Nomor halaman |
 | `limit` | number | `20` | Item per halaman |
+| `sort` | string | `desc` | Urutan sort berdasarkan `created_at`. Nilai: `asc` (terlama dulu) atau `desc` (terbaru dulu) |
+| `status` | string | - | Filter berdasarkan status order: `pending`, `shipped`, `delivered`, `cancelled` |
 
 **Contoh Request:**
 
 ```json
-GET /api/orders/me?page=1&limit=10
+GET /api/orders/me?page=1&limit=10&sort=asc&status=pending
 Cookie: token=<signed-token>
 ```
 
@@ -2234,11 +2239,13 @@ Mendapatkan daftar semua order (admin only, dengan pagination).
 |---|---|---|---|
 | `page` | number | `1` | Nomor halaman |
 | `limit` | number | `20` | Item per halaman |
+| `sort` | string | `desc` | Urutan sort berdasarkan `created_at`. Nilai: `asc` (terlama dulu) atau `desc` (terbaru dulu) |
+| `status` | string | - | Filter berdasarkan status order: `pending`, `shipped`, `delivered`, `cancelled` |
 
 **Contoh Request:**
 
 ```json
-GET /api/orders/?page=1&limit=10
+GET /api/orders/?page=1&limit=10&status=pending
 Cookie: token=<admin-signed-token>
 ```
 

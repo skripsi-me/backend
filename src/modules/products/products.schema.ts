@@ -1,5 +1,11 @@
 import { Type, type Static } from '@sinclair/typebox';
-import { DEFAULT_LIMIT, MAX_LIMIT, PaginationMetaSchema, PaginationQuerySchema } from '../../shared/schemas/pagination.schema.js';
+import {
+  DEFAULT_LIMIT,
+  MAX_LIMIT,
+  PaginationMetaSchema,
+  PaginationQuerySchema,
+  SortQuerySchema,
+} from '../../shared/schemas/pagination.schema.js';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
 
 /** Schema for category object within product */
@@ -19,22 +25,30 @@ export const ProductSchema = Type.Object({
   price: Type.Number({ description: 'Product price' }),
   stock: Type.Number({ description: 'Available stock quantity' }),
   image_url: Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
-  category: Type.Optional(Type.Union([ProductCategorySchema, Type.Null()], { description: 'Category details' })),
+  category: Type.Optional(
+    Type.Union([ProductCategorySchema, Type.Null()], { description: 'Category details' }),
+  ),
   created_at: Type.Any({ description: 'Creation timestamp' }),
   updated_at: Type.Any({ description: 'Last update timestamp' }),
 });
 
 /** Schema for listing products with pagination, search, and category filter */
 export const ListProductsSchema = {
-  query: Type.Composite([PaginationQuerySchema, Type.Object({
-    search: Type.Optional(Type.String({ description: 'Search term for name or description' })),
-    category_id: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
-  })]),
+  query: Type.Composite([
+    PaginationQuerySchema,
+    SortQuerySchema,
+    Type.Object({
+      search: Type.Optional(Type.String({ description: 'Search term for name or description' })),
+      category_id: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
+    }),
+  ]),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      data: Type.Array(ProductSchema),
-      meta: PaginationMetaSchema,
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        data: Type.Array(ProductSchema),
+        meta: PaginationMetaSchema,
+      }),
+    ),
   },
 };
 
@@ -63,12 +77,14 @@ export const ListProductsByCategorySchema = {
   params: Type.Object({
     categorySlug: Type.String({ description: 'Category slug' }),
   }),
-  query: PaginationQuerySchema,
+  query: Type.Composite([PaginationQuerySchema, SortQuerySchema]),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      data: Type.Array(ProductSchema),
-      meta: PaginationMetaSchema,
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        data: Type.Array(ProductSchema),
+        meta: PaginationMetaSchema,
+      }),
+    ),
   },
 };
 
@@ -80,7 +96,9 @@ export const CreateProductSchema = {
     price: Type.Number({ minimum: 0, description: 'Product price' }),
     stock: Type.Number({ minimum: 0, description: 'Stock quantity' }),
     category_id: Type.String({ description: 'Category ULID' }),
-    image_url: Type.Optional(Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' })),
+    image_url: Type.Optional(
+      Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
+    ),
   }),
   response: {
     201: createStandardResponseSchema(ProductSchema),
@@ -98,7 +116,9 @@ export const UpdateProductSchema = {
     price: Type.Optional(Type.Number({ minimum: 0, description: 'Product price' })),
     stock: Type.Optional(Type.Number({ minimum: 0, description: 'Stock quantity' })),
     category_id: Type.Optional(Type.String({ description: 'Category ULID' })),
-    image_url: Type.Optional(Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' })),
+    image_url: Type.Optional(
+      Type.Union([Type.String(), Type.Null()], { description: 'Product image URL' }),
+    ),
   }),
   response: {
     200: createStandardResponseSchema(ProductSchema),
@@ -111,9 +131,11 @@ export const DeleteProductSchema = {
     id: Type.String({ description: 'Product ULID' }),
   }),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      success: Type.Boolean({ description: 'Deletion status' }),
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        success: Type.Boolean({ description: 'Deletion status' }),
+      }),
+    ),
   },
 };
 
@@ -122,14 +144,21 @@ export const BestSellerProductSchema = Type.Intersect([
   ProductSchema,
   Type.Object({
     total_sold: Type.Number({ description: 'Total quantity sold' }),
-  })
+  }),
 ]);
 
 /** Schema for getting best seller products */
 export const GetBestSellersSchema = {
   query: Type.Object({
     page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: 'Number of products to show' })),
+    limit: Type.Optional(
+      Type.Number({
+        minimum: 1,
+        maximum: MAX_LIMIT,
+        default: DEFAULT_LIMIT,
+        description: 'Number of products to show',
+      }),
+    ),
   }),
   response: {
     200: createStandardResponseSchema(Type.Array(BestSellerProductSchema)),

@@ -7,20 +7,27 @@ import { ulid } from 'ulidx';
 import { hashPassword } from '../../../shared/utils/hash.util.js';
 import { type FastifyInstance } from 'fastify';
 
-function buildMultipartBody(fields: Record<string, string>, file?: { filename: string; contentType: string; content: Buffer }) {
+function buildMultipartBody(
+  fields: Record<string, string>,
+  file?: { filename: string; contentType: string; content: Buffer },
+) {
   const boundary = '----TestBoundary' + ulid();
   const parts: Buffer[] = [];
 
   for (const [key, value] of Object.entries(fields)) {
-    parts.push(Buffer.from(
-      `--${boundary}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${value}\r\n`
-    ));
+    parts.push(
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${value}\r\n`,
+      ),
+    );
   }
 
   if (file) {
-    parts.push(Buffer.from(
-      `--${boundary}\r\nContent-Disposition: form-data; name="image"; filename="${file.filename}"\r\nContent-Type: ${file.contentType}\r\n\r\n`
-    ));
+    parts.push(
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="image"; filename="${file.filename}"\r\nContent-Type: ${file.contentType}\r\n\r\n`,
+      ),
+    );
     parts.push(file.content);
     parts.push(Buffer.from('\r\n'));
   }
@@ -41,7 +48,7 @@ describe('Products Module', () => {
 
   beforeAll(async () => {
     app = await buildApp();
-    
+
     // Create admin user
     const adminId = ulid();
     const hashedPassword = await hashPassword('password');
@@ -82,6 +89,7 @@ describe('Products Module', () => {
         price: '2500.00',
         stock: 10,
         categoryId,
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
       },
       {
         id: ulid(),
@@ -91,7 +99,8 @@ describe('Products Module', () => {
         price: '150.00',
         stock: 50,
         categoryId,
-      }
+        createdAt: new Date('2026-01-02T00:00:00.000Z'),
+      },
     ]);
   });
 
@@ -105,7 +114,7 @@ describe('Products Module', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/products',
-      query: { page: '1', limit: '1' }
+      query: { page: '1', limit: '1' },
     });
 
     expect(response.statusCode).toBe(200);
@@ -119,13 +128,61 @@ describe('Products Module', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/products',
-      query: { search: 'gaming' }
+      query: { search: 'gaming' },
     });
 
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);
     expect(body.metadata.code).toBe(200);
     expect(body.data.data.some((p: any) => p.name.toLowerCase().includes('gaming'))).toBe(true);
+  });
+
+  it('should sort products by created_at ascending', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { category_id: categoryId, sort: 'asc' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.data[0].name).toBe('Gaming Laptop Unique');
+  });
+
+  it('should sort products by created_at descending (default)', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { category_id: categoryId },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.data[0].name).toBe('Mechanical Keyboard Unique');
+  });
+
+  it('should sort products by category slug', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products/category/test-cat-prod-unique',
+      query: { sort: 'asc' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.data[0].name).toBe('Gaming Laptop Unique');
+  });
+
+  it('should reject invalid sort value', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { sort: 'sideways' },
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.message).toBe('Validation Error');
   });
 
   it('should create a product with image upload', async () => {
@@ -137,7 +194,7 @@ describe('Products Module', () => {
         stock: '5',
         category_id: categoryId,
       },
-      { filename: 'test.jpg', contentType: 'image/jpeg', content: fakeImage }
+      { filename: 'test.jpg', contentType: 'image/jpeg', content: fakeImage },
     );
 
     const response = await app.inject({
@@ -169,7 +226,7 @@ describe('Products Module', () => {
         stock: '1',
         category_id: categoryId,
       },
-      { filename: 'test.txt', contentType: 'text/plain', content: fakeFile }
+      { filename: 'test.txt', contentType: 'text/plain', content: fakeFile },
     );
 
     const response = await app.inject({

@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { products, categories, orderItems } from '../../db/schema.js';
-import { eq, or, and, sql, count, desc, like, type SQL } from 'drizzle-orm';
+import { eq, or, and, sql, count, desc, asc, like, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type ListProductsQuery } from './products.schema.js';
@@ -20,11 +20,13 @@ export class ProductsService {
       price: row.price,
       stock: row.stock,
       image_url: row.image_url,
-      category: row.category_id ? {
-        name: row.category_name,
-        slug: row.category_slug,
-        description: row.category_description,
-      } : null,
+      category: row.category_id
+        ? {
+            name: row.category_name,
+            slug: row.category_slug,
+            description: row.category_description,
+          }
+        : null,
       created_at: row.created_at,
       updated_at: row.updated_at,
     };
@@ -40,31 +42,32 @@ export class ProductsService {
     const limit = query.limit || 20;
     const offset = (page - 1) * limit;
 
-    const result = await db.select({
-      id: products.id,
-      category_id: products.categoryId,
-      name: products.name,
-      slug: products.slug,
-      description: products.description,
-      price: products.price,
-      stock: products.stock,
-      image_url: products.imageUrl,
-      category_name: categories.name,
-      category_slug: categories.slug,
-      category_description: categories.description,
-      created_at: products.createdAt,
-      updated_at: products.updatedAt,
-      total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
-    })
-    .from(orderItems)
-    .innerJoin(products, eq(orderItems.productId, products.id))
-    .leftJoin(categories, eq(products.categoryId, categories.id))
-    .groupBy(products.id)
-    .orderBy(desc(sql`SUM(${orderItems.quantity})`))
-    .limit(limit)
-    .offset(offset);
+    const result = await db
+      .select({
+        id: products.id,
+        category_id: products.categoryId,
+        name: products.name,
+        slug: products.slug,
+        description: products.description,
+        price: products.price,
+        stock: products.stock,
+        image_url: products.imageUrl,
+        category_name: categories.name,
+        category_slug: categories.slug,
+        category_description: categories.description,
+        created_at: products.createdAt,
+        updated_at: products.updatedAt,
+        total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
+      })
+      .from(orderItems)
+      .innerJoin(products, eq(orderItems.productId, products.id))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .groupBy(products.id)
+      .orderBy(desc(sql`SUM(${orderItems.quantity})`))
+      .limit(limit)
+      .offset(offset);
 
-    return result.map(row => ({
+    return result.map((row) => ({
       ...this.mapProductRow(row),
       total_sold: Number(row.total_sold),
     }));
@@ -87,7 +90,7 @@ export class ProductsService {
       // Use MATCH AGAINST for fulltext search
       whereClause = or(
         sql`MATCH(${products.name}) AGAINST(${query.search} IN NATURAL LANGUAGE MODE)`,
-        sql`MATCH(${products.description}) AGAINST(${query.search} IN NATURAL LANGUAGE MODE)`
+        sql`MATCH(${products.description}) AGAINST(${query.search} IN NATURAL LANGUAGE MODE)`,
       );
     }
 
@@ -96,8 +99,56 @@ export class ProductsService {
       whereClause = whereClause ? and(whereClause, catFilter) : catFilter;
     }
 
+    const orderBy = query.sort === 'asc' ? asc(products.createdAt) : desc(products.createdAt);
+
     const [data, totalResult] = await Promise.all([
-      db.select({
+      db
+        .select({
+          id: products.id,
+          category_id: products.categoryId,
+          name: products.name,
+          slug: products.slug,
+          description: products.description,
+          price: products.price,
+          stock: products.stock,
+          image_url: products.imageUrl,
+          category_name: categories.name,
+          category_slug: categories.slug,
+          category_description: categories.description,
+          created_at: products.createdAt,
+          updated_at: products.updatedAt,
+        })
+        .from(products)
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(whereClause)
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(offset),
+      db.select({ value: count() }).from(products).where(whereClause),
+    ]);
+
+    const total = totalResult[0]?.value || 0;
+    const total_pages = Math.ceil(total / limit);
+
+    return {
+      data: data.map((row) => this.mapProductRow(row)),
+      meta: {
+        total,
+        page,
+        limit,
+        total_pages,
+      },
+    };
+  }
+
+  /**
+   * Get product by ID.
+   * @param id - Product ULID
+   * @returns Product object or undefined if not found
+   */
+  async getById(id: string) {
+    const [product] = await db
+      .select({
         id: products.id,
         category_id: products.categoryId,
         name: products.name,
@@ -114,48 +165,8 @@ export class ProductsService {
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(whereClause).limit(limit).offset(offset),
-      db.select({ value: count() }).from(products).where(whereClause)
-    ]);
-
-    const total = totalResult[0]?.value || 0;
-    const total_pages = Math.ceil(total / limit);
-
-    return {
-      data: data.map(row => this.mapProductRow(row)),
-      meta: {
-        total,
-        page,
-        limit,
-        total_pages,
-      },
-    };
-  }
-
-  /**
-   * Get product by ID.
-   * @param id - Product ULID
-   * @returns Product object or undefined if not found
-   */
-  async getById(id: string) {
-    const [product] = await db.select({
-      id: products.id,
-      category_id: products.categoryId,
-      name: products.name,
-      slug: products.slug,
-      description: products.description,
-      price: products.price,
-      stock: products.stock,
-      image_url: products.imageUrl,
-      category_name: categories.name,
-      category_slug: categories.slug,
-      category_description: categories.description,
-      created_at: products.createdAt,
-      updated_at: products.updatedAt,
-    })
-    .from(products)
-    .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(products.id, id)).limit(1);
+      .where(eq(products.id, id))
+      .limit(1);
 
     return product ? this.mapProductRow(product) : undefined;
   }
@@ -166,41 +177,8 @@ export class ProductsService {
    * @returns Product object or undefined if not found
    */
   async getBySlug(slug: string) {
-    const [product] = await db.select({
-      id: products.id,
-      category_id: products.categoryId,
-      name: products.name,
-      slug: products.slug,
-      description: products.description,
-      price: products.price,
-      stock: products.stock,
-      image_url: products.imageUrl,
-      category_name: categories.name,
-      category_slug: categories.slug,
-      category_description: categories.description,
-      created_at: products.createdAt,
-      updated_at: products.updatedAt,
-    })
-    .from(products)
-    .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(products.slug, slug)).limit(1);
-
-    return product ? this.mapProductRow(product) : undefined;
-  }
-
-  /**
-   * List products by category slug with pagination.
-   * @param categorySlug - Category slug to filter by
-   * @param query - Query parameters (page, limit)
-   * @returns Paginated result with data array and meta object
-   */
-  async listByCategorySlug(categorySlug: string, query: { page?: number; limit?: number }) {
-    const page = query.page || 1;
-    const limit = query.limit || 20;
-    const offset = (page - 1) * limit;
-
-    const [data, totalResult] = await Promise.all([
-      db.select({
+    const [product] = await db
+      .select({
         id: products.id,
         category_id: products.categoryId,
         name: products.name,
@@ -216,21 +194,63 @@ export class ProductsService {
         updated_at: products.updatedAt,
       })
       .from(products)
-      .innerJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(categories.slug, categorySlug))
-      .limit(limit)
-      .offset(offset),
-      db.select({ value: count() })
-      .from(products)
-      .innerJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(categories.slug, categorySlug))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .where(eq(products.slug, slug))
+      .limit(1);
+
+    return product ? this.mapProductRow(product) : undefined;
+  }
+
+  /**
+   * List products by category slug with pagination.
+   * @param categorySlug - Category slug to filter by
+   * @param query - Query parameters (page, limit)
+   * @returns Paginated result with data array and meta object
+   */
+  async listByCategorySlug(
+    categorySlug: string,
+    query: { page?: number; limit?: number; sort?: 'asc' | 'desc' },
+  ) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const offset = (page - 1) * limit;
+    const orderBy = query.sort === 'asc' ? asc(products.createdAt) : desc(products.createdAt);
+
+    const [data, totalResult] = await Promise.all([
+      db
+        .select({
+          id: products.id,
+          category_id: products.categoryId,
+          name: products.name,
+          slug: products.slug,
+          description: products.description,
+          price: products.price,
+          stock: products.stock,
+          image_url: products.imageUrl,
+          category_name: categories.name,
+          category_slug: categories.slug,
+          category_description: categories.description,
+          created_at: products.createdAt,
+          updated_at: products.updatedAt,
+        })
+        .from(products)
+        .innerJoin(categories, eq(products.categoryId, categories.id))
+        .where(eq(categories.slug, categorySlug))
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ value: count() })
+        .from(products)
+        .innerJoin(categories, eq(products.categoryId, categories.id))
+        .where(eq(categories.slug, categorySlug)),
     ]);
 
     const total = totalResult[0]?.value || 0;
     const total_pages = Math.ceil(total / limit);
 
     return {
-      data: data.map(row => this.mapProductRow(row)),
+      data: data.map((row) => this.mapProductRow(row)),
       meta: { total, page, limit, total_pages },
     };
   }
@@ -295,11 +315,12 @@ export class ProductsService {
    */
   async update(id: string, data: any) {
     const updateData: Record<string, any> = { ...data };
-    
+
     if (data.price !== undefined) updateData.price = String(data.price);
     if (data.stock !== undefined) updateData.stock = data.stock;
     if (data.name !== undefined) updateData.name = sanitize(data.name);
-    if (data.description !== undefined) updateData.description = data.description ? sanitize(data.description) : null;
+    if (data.description !== undefined)
+      updateData.description = data.description ? sanitize(data.description) : null;
 
     if (data.name) {
       updateData.slug = await this.generateSlug(data.name);

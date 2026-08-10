@@ -7,7 +7,24 @@ export const MAX_LIMIT = 1000;
 /** Shared pagination query params */
 export const PaginationQuerySchema = Type.Object({
   page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
-  limit: Type.Optional(Type.Number({ minimum: 1, maximum: MAX_LIMIT, default: DEFAULT_LIMIT, description: 'Items per page' })),
+  limit: Type.Optional(
+    Type.Number({
+      minimum: 1,
+      maximum: MAX_LIMIT,
+      default: DEFAULT_LIMIT,
+      description: 'Items per page',
+    }),
+  ),
+});
+
+/** Shared sort query param by created_at */
+export const SortQuerySchema = Type.Object({
+  sort: Type.Optional(
+    Type.Union([Type.Literal('asc'), Type.Literal('desc')], {
+      default: 'desc',
+      description: 'Sort order by created_at (default: desc)',
+    }),
+  ),
 });
 
 /** Pagination meta in response */
@@ -19,11 +36,13 @@ export const PaginationMetaSchema = Type.Object({
 });
 
 /** Helper to create paginated response schema for any data type */
-export function createPaginatedResponseSchema<T extends ReturnType<typeof Type.Object>>(dataSchema: T) {
+export function createPaginatedResponseSchema<T extends ReturnType<typeof Type.Object>>(
+  dataSchema: T,
+) {
   return createStandardResponseSchema(
     Type.Object({
       data: Type.Array(dataSchema),
       meta: PaginationMetaSchema,
-    })
+    }),
   );
 }

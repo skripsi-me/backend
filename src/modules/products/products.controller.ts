@@ -53,7 +53,10 @@ export class ProductsController {
    * @param reply - Fastify reply
    * @returns 200 with array of best seller products
    */
-  async getBestSellers(request: FastifyRequest<{ Querystring: GetBestSellersQuery }>, reply: FastifyReply) {
+  async getBestSellers(
+    request: FastifyRequest<{ Querystring: GetBestSellersQuery }>,
+    reply: FastifyReply,
+  ) {
     const products = await this.productsService.getBestSellers(request.query);
     return reply.success(products);
   }
@@ -103,8 +106,17 @@ export class ProductsController {
    * @param reply - Fastify reply
    * @returns 200 with paginated products
    */
-  async listByCategorySlug(request: FastifyRequest<{ Params: { categorySlug: string }; Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
-    const result = await this.productsService.listByCategorySlug(request.params.categorySlug, request.query);
+  async listByCategorySlug(
+    request: FastifyRequest<{
+      Params: { categorySlug: string };
+      Querystring: { page?: number; limit?: number; sort?: 'asc' | 'desc' };
+    }>,
+    reply: FastifyReply,
+  ) {
+    const result = await this.productsService.listByCategorySlug(
+      request.params.categorySlug,
+      request.query,
+    );
     return reply.success(result, 'Products retrieved successfully');
   }
 
@@ -120,7 +132,9 @@ export class ProductsController {
       const body = extractBodyFields(request.body);
 
       if (!body.name || !body.price || body.stock === undefined || !body.category_id) {
-        return reply.status(400).send(formatError(400, 'Missing required fields: name, price, stock, category_id'));
+        return reply
+          .status(400)
+          .send(formatError(400, 'Missing required fields: name, price, stock, category_id'));
       }
 
       const product = await this.productsService.create({

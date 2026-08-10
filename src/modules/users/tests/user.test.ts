@@ -15,7 +15,7 @@ describe('User Module', () => {
 
   beforeAll(async () => {
     app = await buildApp();
-    
+
     // Create admin
     const adminId = ulid();
     const adminHashedPassword = await hashPassword('password');
@@ -25,6 +25,7 @@ describe('User Module', () => {
       password: adminHashedPassword,
       name: 'Admin',
       role: 'admin',
+      createdAt: new Date('2025-01-01T00:00:00.000Z'),
     });
 
     const adminLoginResponse = await app.inject({
@@ -43,6 +44,7 @@ describe('User Module', () => {
       password: userHashedPassword,
       name: 'User',
       role: 'user',
+      createdAt: new Date('2025-06-01T00:00:00.000Z'),
     });
 
     const userLoginResponse = await app.inject({
@@ -96,5 +98,37 @@ describe('User Module', () => {
     });
 
     expect(response.statusCode).toBe(403);
+  });
+
+  it('should sort users by created_at ascending', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/users',
+      query: { sort: 'asc' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    const emails = body.data.data.map((u: any) => u.email);
+    expect(emails.indexOf('user_test_admin@example.com')).toBeLessThan(
+      emails.indexOf('user_test_normal@example.com'),
+    );
+  });
+
+  it('should sort users by created_at descending', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/users',
+      query: { sort: 'desc' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    const emails = body.data.data.map((u: any) => u.email);
+    expect(emails.indexOf('user_test_normal@example.com')).toBeLessThan(
+      emails.indexOf('user_test_admin@example.com'),
+    );
   });
 });

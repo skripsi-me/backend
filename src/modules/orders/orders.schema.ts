@@ -1,6 +1,21 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
-import { PaginationQuerySchema, PaginationMetaSchema } from '../../shared/schemas/pagination.schema.js';
+import {
+  PaginationQuerySchema,
+  PaginationMetaSchema,
+  SortQuerySchema,
+} from '../../shared/schemas/pagination.schema.js';
+
+/** Schema for order status values */
+export const OrderStatusSchema = Type.Union(
+  [
+    Type.Literal('pending'),
+    Type.Literal('shipped'),
+    Type.Literal('delivered'),
+    Type.Literal('cancelled'),
+  ],
+  { description: 'Order status' },
+);
 
 /** Schema for a single order item */
 export const OrderItemSchema = Type.Object({
@@ -9,9 +24,11 @@ export const OrderItemSchema = Type.Object({
   product_id: Type.String({ description: 'Product ULID' }),
   quantity: Type.Number({ description: 'Quantity purchased' }),
   price_at_purchase: Type.String({ description: 'Price per unit at the time of purchase' }),
-  product: Type.Optional(Type.Object({
-    name: Type.String({ description: 'Product name' }),
-  })),
+  product: Type.Optional(
+    Type.Object({
+      name: Type.String({ description: 'Product name' }),
+    }),
+  ),
 });
 
 /** Schema for order object */
@@ -26,12 +43,20 @@ export const OrderSchema = Type.Object({
 
 /** Schema for listing orders (admin sees all, user sees own) */
 export const ListOrdersSchema = {
-  query: PaginationQuerySchema,
+  query: Type.Composite([
+    PaginationQuerySchema,
+    SortQuerySchema,
+    Type.Object({
+      status: Type.Optional(OrderStatusSchema),
+    }),
+  ]),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      data: Type.Array(OrderSchema),
-      meta: PaginationMetaSchema,
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        data: Type.Array(OrderSchema),
+        meta: PaginationMetaSchema,
+      }),
+    ),
   },
 };
 
@@ -58,12 +83,7 @@ export const UpdateOrderStatusSchema = {
     id: Type.String({ description: 'Order ULID' }),
   }),
   body: Type.Object({
-    status: Type.Union([
-      Type.Literal('pending'),
-      Type.Literal('shipped'),
-      Type.Literal('delivered'),
-      Type.Literal('cancelled'),
-    ], { description: 'New order status' }),
+    status: OrderStatusSchema,
   }),
   response: {
     200: createStandardResponseSchema(OrderSchema),
@@ -80,7 +100,9 @@ export const OrderReportSchema = Type.Object({
 /** Schema for getting order report (admin only) */
 export const GetOrderReportSchema = {
   query: Type.Object({
-    start_date: Type.Optional(Type.String({ format: 'date', description: 'Start date (YYYY-MM-DD)' })),
+    start_date: Type.Optional(
+      Type.String({ format: 'date', description: 'Start date (YYYY-MM-DD)' }),
+    ),
     end_date: Type.Optional(Type.String({ format: 'date', description: 'End date (YYYY-MM-DD)' })),
   }),
   response: {
@@ -90,5 +112,7 @@ export const GetOrderReportSchema = {
 
 /** TypeScript type for update order status request body */
 export type UpdateOrderStatusBody = Static<typeof UpdateOrderStatusSchema.body>;
+/** TypeScript type for list orders query parameters */
+export type ListOrdersQuery = Static<typeof ListOrdersSchema.query>;
 /** TypeScript type for order report query parameters */
 export type GetOrderReportQuery = Static<typeof GetOrderReportSchema.query>;

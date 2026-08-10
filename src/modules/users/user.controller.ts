@@ -1,6 +1,11 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { UserService } from './user.service.js';
-import { type CreateUserBody, type UpdateUserBody, type UpdateProfileBody } from './user.schema.js';
+import {
+  type CreateUserBody,
+  type UpdateUserBody,
+  type UpdateProfileBody,
+  type ListUsersQuery,
+} from './user.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
 /**
@@ -16,7 +21,7 @@ export class UserController {
    * @param reply - Fastify reply
    * @returns 200 with array of users
    */
-  async getAll(request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>, reply: FastifyReply) {
+  async getAll(request: FastifyRequest<{ Querystring: ListUsersQuery }>, reply: FastifyReply) {
     const result = await this.userService.getAll(request.query);
     return reply.success(result, 'Users retrieved successfully');
   }
@@ -67,7 +72,10 @@ export class UserController {
    * @param reply - Fastify reply
    * @returns 200 with updated user or 404 if not found
    */
-  async update(request: FastifyRequest<{ Params: { id: string }; Body: UpdateUserBody }>, reply: FastifyReply) {
+  async update(
+    request: FastifyRequest<{ Params: { id: string }; Body: UpdateUserBody }>,
+    reply: FastifyReply,
+  ) {
     const user = await this.userService.update(request.params.id, request.body);
     if (!user) {
       return reply.status(404).send(formatError(404, 'User not found'));

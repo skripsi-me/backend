@@ -1,6 +1,10 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
-import { PaginationQuerySchema, PaginationMetaSchema } from '../../shared/schemas/pagination.schema.js';
+import {
+  PaginationQuerySchema,
+  PaginationMetaSchema,
+  SortQuerySchema,
+} from '../../shared/schemas/pagination.schema.js';
 
 /** Base schema for user object */
 export const UserSchema = Type.Object({
@@ -8,18 +12,22 @@ export const UserSchema = Type.Object({
   email: Type.String({ format: 'email', description: 'User email address' }),
   name: Type.String({ description: 'User full name' }),
   address: Type.Union([Type.String(), Type.Null()], { description: 'User physical address' }),
-  phone_number: Type.Union([Type.String(), Type.Null()], { description: 'User contact phone number' }),
+  phone_number: Type.Union([Type.String(), Type.Null()], {
+    description: 'User contact phone number',
+  }),
   role: Type.String({ description: 'User role (user, admin)' }),
 });
 
 /** Schema for listing all users (admin only) */
 export const GetUsersSchema = {
-  query: PaginationQuerySchema,
+  query: Type.Composite([PaginationQuerySchema, SortQuerySchema]),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      data: Type.Array(UserSchema),
-      meta: PaginationMetaSchema,
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        data: Type.Array(UserSchema),
+        meta: PaginationMetaSchema,
+      }),
+    ),
   },
 };
 
@@ -48,7 +56,9 @@ export const CreateUserSchema = {
     name: Type.String({ minLength: 1, description: 'User full name' }),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
     phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
-    role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
+    role: Type.Optional(
+      Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' }),
+    ),
   }),
   response: {
     201: createStandardResponseSchema(UserSchema),
@@ -62,11 +72,15 @@ export const UpdateUserSchema = {
   }),
   body: Type.Object({
     email: Type.Optional(Type.String({ format: 'email', description: 'User email address' })),
-    password: Type.Optional(Type.String({ minLength: 8, description: 'User password (min 8 characters)' })),
+    password: Type.Optional(
+      Type.String({ minLength: 8, description: 'User password (min 8 characters)' }),
+    ),
     name: Type.Optional(Type.String({ minLength: 1, description: 'User full name' })),
     address: Type.Optional(Type.String({ description: 'User physical address' })),
     phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
-    role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
+    role: Type.Optional(
+      Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' }),
+    ),
   }),
   response: {
     200: createStandardResponseSchema(UserSchema),
@@ -91,9 +105,11 @@ export const DeleteUserSchema = {
     id: Type.String({ description: 'User ULID' }),
   }),
   response: {
-    200: createStandardResponseSchema(Type.Object({
-      success: Type.Boolean({ description: 'Deletion status' }),
-    })),
+    200: createStandardResponseSchema(
+      Type.Object({
+        success: Type.Boolean({ description: 'Deletion status' }),
+      }),
+    ),
   },
 };
 
@@ -105,3 +121,5 @@ export type UpdateUserBody = Static<typeof UpdateUserSchema.body>;
 export type UpdateProfileBody = Static<typeof UpdateProfileSchema.body>;
 /** TypeScript type for user object */
 export type User = Static<typeof UserSchema>;
+/** TypeScript type for list users query parameters */
+export type ListUsersQuery = Static<typeof GetUsersSchema.query>;

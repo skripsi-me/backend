@@ -1,10 +1,15 @@
 import { db } from '../../config/database.js';
 import { users } from '../../db/schema.js';
-import { eq, ne, and, count } from 'drizzle-orm';
+import { eq, ne, and, count, asc, desc } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword } from '../../shared/utils/hash.util.js';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
-import { type CreateUserBody, type UpdateUserBody, type UpdateProfileBody } from './user.schema.js';
+import {
+  type CreateUserBody,
+  type UpdateUserBody,
+  type UpdateProfileBody,
+  type ListUsersQuery,
+} from './user.schema.js';
 
 /**
  * Service for user management operations.
@@ -15,20 +20,26 @@ export class UserService {
    * Get all users (admin only).
    * @returns Array of user objects
    */
-  async getAll(query: { page?: number; limit?: number } = {}) {
+  async getAll(query: ListUsersQuery = {}) {
     const page = query.page || 1;
     const limit = query.limit || 20;
     const offset = (page - 1) * limit;
+    const orderBy = query.sort === 'asc' ? asc(users.createdAt) : desc(users.createdAt);
 
     const [data, totalResult] = await Promise.all([
-      db.select({
-        id: users.id,
-        email: users.email,
-        name: users.name,
-        address: users.address,
-        phone_number: users.phoneNumber,
-        role: users.role,
-      }).from(users).limit(limit).offset(offset),
+      db
+        .select({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          address: users.address,
+          phone_number: users.phoneNumber,
+          role: users.role,
+        })
+        .from(users)
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(offset),
       db.select({ value: count() }).from(users),
     ]);
 
@@ -47,14 +58,18 @@ export class UserService {
    * @returns User object or undefined if not found
    */
   async getById(id: string) {
-    const [user] = await db.select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      address: users.address,
-      phone_number: users.phoneNumber,
-      role: users.role,
-    }).from(users).where(eq(users.id, id)).limit(1);
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        address: users.address,
+        phone_number: users.phoneNumber,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return user;
   }
 
@@ -66,7 +81,7 @@ export class UserService {
   async create(data: CreateUserBody) {
     const id = ulid();
     const hashedPassword = await hashPassword(data.password);
-    
+
     await db.insert(users).values({
       id,
       email: data.email,
@@ -88,7 +103,7 @@ export class UserService {
    */
   async update(id: string, data: UpdateUserBody) {
     const updateData: any = { ...data };
-    
+
     if (data.password) {
       updateData.password = await hashPassword(data.password);
     }
@@ -118,7 +133,7 @@ export class UserService {
    */
   async updateProfile(id: string, data: UpdateProfileBody) {
     const updateData: any = { ...data };
-    
+
     if (data.name !== undefined) {
       updateData.name = sanitize(data.name);
     }
@@ -131,7 +146,7 @@ export class UserService {
       updateData.phoneNumber = data.phone_number;
       delete updateData.phone_number;
     }
-    
+
     await db.update(users).set(updateData).where(eq(users.id, id));
     return this.getById(id);
   }
