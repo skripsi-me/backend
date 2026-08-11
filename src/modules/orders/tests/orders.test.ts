@@ -206,6 +206,6 @@ describe('Orders Module', () => {
 
     expect(response.statusCode).toBe(400);
     const body = JSON.parse(response.body);
-    expect(body.metadata.message).toBe('Validation Error');
+    expect(body.metadata.message).toBe('Data yang dikirim tidak valid. Periksa kembali isian Anda.');
   });
 });

@@ -22,7 +22,7 @@ const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
       await request.jwtVerify();
     } catch (err) {
       request.log.warn({ err }, 'JWT verification failed');
-      return reply.status(401).send(formatError(401, 'Invalid or missing token'));
+      return reply.status(401).send(formatError(401, 'Sesi berakhir. Silakan login kembali.'));
     }
   });
 
@@ -32,7 +32,7 @@ const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
 
     if (request.user?.role !== 'admin') {
       request.log.warn({ userId: request.user?.id }, 'Non-admin user attempted admin access');
-      return reply.status(403).send(formatError(403, 'Admin access required'));
+      return reply.status(403).send(formatError(403, 'Akses khusus admin. Anda tidak memiliki izin.'));
     }
   });
 });

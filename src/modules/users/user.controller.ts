@@ -35,7 +35,7 @@ export class UserController {
   async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const user = await this.userService.getById(request.params.id);
     if (!user) {
-      return reply.status(404).send(formatError(404, 'User not found'));
+      return reply.status(404).send(formatError(404, 'Pengguna tidak ditemukan.'));
     }
     return reply.success(user, 'User retrieved successfully');
   }
@@ -60,7 +60,7 @@ export class UserController {
   async create(request: FastifyRequest<{ Body: CreateUserBody }>, reply: FastifyReply) {
     const existing = await this.userService.findByEmail(request.body.email);
     if (existing) {
-      return reply.status(409).send(formatError(409, 'Email already exists'));
+      return reply.status(409).send(formatError(409, 'Email sudah terdaftar. Gunakan email lain.'));
     }
     const user = await this.userService.create(request.body);
     return reply.status(201).success(user, 'User created successfully');
@@ -78,7 +78,7 @@ export class UserController {
   ) {
     const user = await this.userService.update(request.params.id, request.body);
     if (!user) {
-      return reply.status(404).send(formatError(404, 'User not found'));
+      return reply.status(404).send(formatError(404, 'Pengguna tidak ditemukan.'));
     }
     return reply.success(user, 'User updated successfully');
   }

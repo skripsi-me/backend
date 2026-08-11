@@ -35,7 +35,7 @@ export class AuthController {
     if (request.body.role === 'admin') {
       if (request.user?.role !== 'admin') {
         request.log.warn({ userId: request.user?.id }, 'Non-admin attempted to register admin account');
-        return reply.status(403).send(formatError(403, 'Only admins can register admin accounts'));
+        return reply.status(403).send(formatError(403, 'Hanya admin yang dapat mendaftarkan akun admin.'));
       }
     }
 
@@ -53,7 +53,7 @@ export class AuthController {
     const user = await this.authService.validateUser(request.body);
     if (!user) {
       request.log.warn({ email: request.body.email }, 'Login failed - invalid credentials');
-      return reply.status(401).send(formatError(401, 'Invalid credentials'));
+      return reply.status(401).send(formatError(401, 'Email atau password salah, gunakan email dan password yang sudah terdaftar.'));
     }
 
     const accessToken = (await reply.jwtSign(
@@ -84,19 +84,19 @@ export class AuthController {
     const { refresh_token: refreshToken } = request.cookies;
     if (!refreshToken) {
       request.log.warn('Refresh token missing');
-      return reply.status(401).send(formatError(401, 'Refresh token missing'));
+      return reply.status(401).send(formatError(401, 'Sesi berakhir. Silakan login kembali.'));
     }
 
     const { value: token } = reply.unsignCookie(refreshToken);
     if (!token) {
       request.log.warn('Invalid refresh token signature');
-      return reply.status(401).send(formatError(401, 'Invalid refresh token signature'));
+      return reply.status(401).send(formatError(401, 'Sesi tidak valid. Silakan login kembali.'));
     }
 
     const user = await this.authService.findByRefreshToken(token);
     if (!user) {
       request.log.warn({ tokenPrefix: token.substring(0, 20) + '...' }, 'Refresh token reuse attempt detected');
-      return reply.status(401).send(formatError(401, 'Session expired or invalid'));
+      return reply.status(401).send(formatError(401, 'Sesi berakhir atau tidak valid. Silakan login kembali.'));
     }
 
     const newAccessToken = (await reply.jwtSign(

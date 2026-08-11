@@ -30,7 +30,7 @@ export class CategoriesController {
   async getBySlug(request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) {
     const category = await this.categoriesService.getBySlug(request.params.slug);
     if (!category) {
-      return reply.status(404).send(formatError(404, 'Category not found'));
+      return reply.status(404).send(formatError(404, 'Kategori tidak ditemukan.'));
     }
     return reply.success(category);
   }
@@ -44,7 +44,7 @@ export class CategoriesController {
   async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const category = await this.categoriesService.getById(request.params.id);
     if (!category) {
-      return reply.status(404).send(formatError(404, 'Category not found'));
+      return reply.status(404).send(formatError(404, 'Kategori tidak ditemukan.'));
     }
     return reply.success(category);
   }
@@ -69,7 +69,7 @@ export class CategoriesController {
   async update(request: FastifyRequest<{ Params: { id: string }; Body: UpdateCategoryBody }>, reply: FastifyReply) {
     const category = await this.categoriesService.update(request.params.id, request.body);
     if (!category) {
-      return reply.status(404).send(formatError(404, 'Category not found'));
+      return reply.status(404).send(formatError(404, 'Kategori tidak ditemukan.'));
     }
     return reply.success(category);
   }

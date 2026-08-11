@@ -36,7 +36,7 @@ export class AuthService {
     });
 
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    if (!user) throw new Error('Registration failed');
+    if (!user) throw new Error('Pendaftaran gagal. Silakan coba lagi.');
 
     return {
       id: user.id,
@@ -97,10 +97,10 @@ export class AuthService {
    */
   async changePassword(userId: string, oldPass: string, newPass: string) {
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-    if (!user) throw new Error('User not found');
+    if (!user) throw new Error('Pengguna tidak ditemukan.');
 
     const isValid = await comparePassword(oldPass, user.password);
-    if (!isValid) throw new Error('Invalid old password');
+    if (!isValid) throw new Error('Password lama salah. Periksa kembali password Anda.');
 
     const hashedPassword = await hashPassword(newPass);
     await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));

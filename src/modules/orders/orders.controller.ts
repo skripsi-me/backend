@@ -49,7 +49,7 @@ export class OrdersController {
       const order = await this.ordersService.createFromCart(userId);
       return reply.status(201).success(order);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : 'Terjadi kesalahan. Silakan coba lagi.';
       request.log.warn({ userId, error: message }, 'Order creation failed');
       return reply.status(400).send(formatError(400, message));
     }
@@ -78,11 +78,11 @@ export class OrdersController {
     const order = await this.ordersService.getById(request.params.id);
 
     if (!order) {
-      return reply.status(404).send(formatError(404, 'Order not found'));
+      return reply.status(404).send(formatError(404, 'Pesanan tidak ditemukan.'));
     }
 
     if (role !== 'admin' && userId !== order.user_id) {
-      return reply.status(403).send(formatError(403, 'Access denied'));
+      return reply.status(403).send(formatError(403, 'Anda tidak memiliki akses ke pesanan ini.'));
     }
 
     return reply.success(order);

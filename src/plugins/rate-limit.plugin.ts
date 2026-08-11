@@ -8,8 +8,8 @@ export default fp(async (fastify: FastifyInstance) => {
     timeWindow: '1 minute',
     errorResponseBuilder: (request, context) => ({
       statusCode: 429,
-      error: 'Too Many Requests',
-      message: `Rate limit exceeded. Maximum ${context.max} requests per minute allowed.`,
+      error: 'Terlalu Banyak Permintaan',
+      message: `Terlalu banyak permintaan. Maksimal ${context.max} permintaan per menit. Silakan tunggu sebentar.`,
     }),
   });
 });

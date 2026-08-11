@@ -46,8 +46,8 @@ export class CartsController {
       const cart = await this.cartsService.updateItem(userId, request.params.itemId, request.body);
       return reply.success(cart);
     } catch (err) {
-      if (err instanceof Error && err.message === 'Cart item not found') {
-        return reply.status(404).send(formatError(404, 'Cart item not found'));
+      if (err instanceof Error && err.message === 'Item keranjang tidak ditemukan.') {
+        return reply.status(404).send(formatError(404, 'Item keranjang tidak ditemukan.'));
       }
       throw err;
     }
@@ -65,8 +65,8 @@ export class CartsController {
       const cart = await this.cartsService.removeItem(userId, request.params.itemId);
       return reply.success(cart);
     } catch (err) {
-      if (err instanceof Error && err.message === 'Cart item not found') {
-        return reply.status(404).send(formatError(404, 'Cart item not found'));
+      if (err instanceof Error && err.message === 'Item keranjang tidak ditemukan.') {
+        return reply.status(404).send(formatError(404, 'Item keranjang tidak ditemukan.'));
       }
       throw err;
     }

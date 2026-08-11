@@ -48,7 +48,7 @@ export class OrdersService {
     const cart = await this.cartsService.getByUserId(userId);
 
     if (!cart.items.length) {
-      throw new Error('Cart is empty');
+      throw new Error('Keranjang belanja masih kosong. Tambahkan produk terlebih dahulu.');
     }
 
     const orderId = ulid();
@@ -93,7 +93,7 @@ export class OrdersService {
           const name = product?.name || item.product_id;
           const available = product?.stock ?? 0;
           throw new Error(
-            `Insufficient stock for ${name}. Available: ${available}, requested: ${item.quantity}`,
+            `Stok ${name} tidak mencukupi. Tersedia: ${available}, diminta: ${item.quantity}.`,
           );
         }
       }

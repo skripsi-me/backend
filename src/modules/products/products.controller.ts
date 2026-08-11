@@ -33,7 +33,9 @@ async function processImageUpload(request: FastifyRequest): Promise<string | und
   if (!file) return undefined;
 
   if (!ALLOWED_MIMES.includes(file.mimetype)) {
-    throw new Error(`Invalid file type: ${file.mimetype}. Allowed: ${ALLOWED_MIMES.join(', ')}`);
+    throw new Error(
+      `Tipe file tidak valid: ${file.mimetype}. Tipe yang diizinkan: ${ALLOWED_MIMES.join(', ')}.`,
+    );
   }
 
   const buffer = await file.toBuffer();
@@ -81,7 +83,7 @@ export class ProductsController {
   async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     const product = await this.productsService.getById(request.params.id);
     if (!product) {
-      return reply.status(404).send(formatError(404, 'Product not found'));
+      return reply.status(404).send(formatError(404, 'Produk tidak ditemukan.'));
     }
     return reply.success(product, 'Product retrieved successfully');
   }
@@ -95,7 +97,7 @@ export class ProductsController {
   async getBySlug(request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) {
     const product = await this.productsService.getBySlug(request.params.slug);
     if (!product) {
-      return reply.status(404).send(formatError(404, 'Product not found'));
+      return reply.status(404).send(formatError(404, 'Produk tidak ditemukan.'));
     }
     return reply.success(product, 'Product retrieved successfully');
   }
@@ -134,7 +136,12 @@ export class ProductsController {
       if (!body.name || !body.price || body.stock === undefined || !body.category_id) {
         return reply
           .status(400)
-          .send(formatError(400, 'Missing required fields: name, price, stock, category_id'));
+          .send(
+            formatError(
+              400,
+              'Field wajib belum lengkap: nama, harga, stok, kategori. Harap lengkapi isian.',
+            ),
+          );
       }
 
       const product = await this.productsService.create({
@@ -145,7 +152,7 @@ export class ProductsController {
       });
       return reply.status(201).success(product);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
+      const message = err instanceof Error ? err.message : 'Gagal mengunggah gambar. Silakan coba lagi.';
       return reply.status(400).send(formatError(400, message));
     }
   }
@@ -165,11 +172,11 @@ export class ProductsController {
         image_url: imageUrl || body.image_url,
       });
       if (!product) {
-        return reply.status(404).send(formatError(404, 'Product not found'));
+        return reply.status(404).send(formatError(404, 'Produk tidak ditemukan.'));
       }
       return reply.success(product);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
+      const message = err instanceof Error ? err.message : 'Gagal mengunggah gambar. Silakan coba lagi.';
       return reply.status(400).send(formatError(400, message));
     }
   }

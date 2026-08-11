@@ -182,7 +182,7 @@ describe('Products Module', () => {
 
     expect(response.statusCode).toBe(400);
     const body = JSON.parse(response.body);
-    expect(body.metadata.message).toBe('Validation Error');
+    expect(body.metadata.message).toBe('Data yang dikirim tidak valid. Periksa kembali isian Anda.');
   });
 
   it('should create a product with image upload', async () => {
@@ -241,7 +241,7 @@ describe('Products Module', () => {
 
     expect(response.statusCode).toBe(400);
     const body = JSON.parse(response.body);
-    expect(body.metadata.message).toContain('Invalid file type');
+    expect(body.metadata.message).toContain('Tipe file tidak valid');
   });
 
   it('should truncate long slug and be accessible by slug', async () => {

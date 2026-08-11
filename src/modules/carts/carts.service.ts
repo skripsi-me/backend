@@ -93,7 +93,7 @@ export class CartsService {
       .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id))) as any;
 
     if (result.affectedRows === 0) {
-      throw new Error('Cart item not found');
+      throw new Error('Item keranjang tidak ditemukan.');
     }
 
     return this.getByUserId(userId);
@@ -112,7 +112,7 @@ export class CartsService {
       .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id))) as any;
 
     if (result.affectedRows === 0) {
-      throw new Error('Cart item not found');
+      throw new Error('Item keranjang tidak ditemukan.');
     }
 
     return this.getByUserId(userId);
