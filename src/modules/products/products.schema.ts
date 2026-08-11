@@ -40,6 +40,11 @@ export const ListProductsSchema = {
     Type.Object({
       search: Type.Optional(Type.String({ description: 'Search term for name or description' })),
       category_id: Type.Optional(Type.String({ description: 'Filter by category ULID' })),
+      stock: Type.Optional(
+        Type.Union([Type.Literal('asc'), Type.Literal('desc')], {
+          description: 'Sort order by stock. Values: asc (lowest stock first) or desc (highest stock first)',
+        }),
+      ),
     }),
   ]),
   response: {

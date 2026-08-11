@@ -99,7 +99,12 @@ export class ProductsService {
       whereClause = whereClause ? and(whereClause, catFilter) : catFilter;
     }
 
-    const orderBy = query.sort === 'asc' ? asc(products.createdAt) : desc(products.createdAt);
+    let orderBy;
+    if (query.stock) {
+      orderBy = query.stock === 'asc' ? asc(products.stock) : desc(products.stock);
+    } else {
+      orderBy = query.sort === 'asc' ? asc(products.createdAt) : desc(products.createdAt);
+    }
 
     const [data, totalResult] = await Promise.all([
       db

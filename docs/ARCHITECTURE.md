@@ -406,8 +406,8 @@ Response saat limit tercapai:
 ```json
 {
   "statusCode": 429,
-  "error": "Too Many Requests",
-  "message": "Rate limit exceeded. Maximum 5 requests per minute allowed."
+  "error": "Terlalu Banyak Permintaan",
+  "message": "Terlalu banyak permintaan. Maksimal 5 permintaan per menit. Silakan tunggu sebentar."
 }
 ```
 

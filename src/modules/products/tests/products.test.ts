@@ -173,6 +173,40 @@ describe('Products Module', () => {
     expect(body.data.data[0].name).toBe('Gaming Laptop Unique');
   });
 
+  it('should sort products by stock ascending', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { category_id: categoryId, stock: 'asc' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.data[0].name).toBe('Gaming Laptop Unique');
+  });
+
+  it('should sort products by stock descending', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { category_id: categoryId, stock: 'desc' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.data[0].name).toBe('Mechanical Keyboard Unique');
+  });
+
+  it('should reject invalid stock sort value', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products',
+      query: { stock: 'sideways' },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
   it('should reject invalid sort value', async () => {
     const response = await app.inject({
       method: 'GET',
