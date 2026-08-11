@@ -55,7 +55,14 @@ export class CartsService {
    */
   async addItem(userId: string, data: AddToCartBody) {
     const cart = await this.getByUserId(userId);
-    
+
+    const [product] = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.id, data.product_id))
+      .limit(1);
+    if (!product) throw new Error('Produk tidak ditemukan.');
+
     const existingItemResult = await db.select().from(cartItems)
       .where(and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, data.product_id)))
       .limit(1);
@@ -87,14 +94,20 @@ export class CartsService {
    */
   async updateItem(userId: string, itemId: string, data: UpdateCartItemBody) {
     const cart = await this.getByUserId(userId);
-    
-    const result = await db.update(cartItems)
-      .set({ quantity: data.quantity })
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id))) as any;
 
-    if (result.affectedRows === 0) {
+    const [existing] = await db
+      .select({ id: cartItems.id })
+      .from(cartItems)
+      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)))
+      .limit(1);
+
+    if (!existing) {
       throw new Error('Item keranjang tidak ditemukan.');
     }
+
+    await db.update(cartItems)
+      .set({ quantity: data.quantity })
+      .where(eq(cartItems.id, itemId));
 
     return this.getByUserId(userId);
   }

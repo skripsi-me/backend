@@ -85,4 +85,49 @@ describe('Carts Module', () => {
     expect(body.data.items[0].product_id).toBe(productId);
     expect(body.data.items[0].quantity).toBe(2);
   });
+
+  it('should return 404 when adding a nonexistent product', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/carts/items',
+      cookies: { token: userCookie },
+      payload: { product_id: ulid(), quantity: 1 },
+    });
+
+    expect(response.statusCode).toBe(404);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.message).toBe('Produk tidak ditemukan.');
+  });
+
+  it('should update cart item to the same quantity without error', async () => {
+    const add = await app.inject({
+      method: 'POST',
+      url: '/api/carts/items',
+      cookies: { token: userCookie },
+      payload: { product_id: productId, quantity: 3 },
+    });
+    const itemId = JSON.parse(add.body).data.items[0].id;
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/carts/items/${itemId}`,
+      cookies: { token: userCookie },
+      payload: { quantity: 3 },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.items[0].quantity).toBe(3);
+  });
+
+  it('should return 404 when updating a nonexistent cart item', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/carts/items/${ulid()}`,
+      cookies: { token: userCookie },
+      payload: { quantity: 1 },
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
 });

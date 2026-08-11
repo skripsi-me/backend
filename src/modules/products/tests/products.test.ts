@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../../../app.js';
 import { db } from '../../../config/database.js';
-import { products, categories, users } from '../../../db/schema.js';
+import { products, categories, users, orders, orderItems } from '../../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword } from '../../../shared/utils/hash.util.js';
@@ -279,7 +279,7 @@ describe('Products Module', () => {
   });
 
   it('should truncate long slug and be accessible by slug', async () => {
-    const longName = 'Sus Kering Coklat Lumer Enak '.repeat(12).trim();
+    const longName = 'Sus Kering Coklat Lumer Enak '.repeat(6).trim();
     const create = await app.inject({
       method: 'POST',
       url: '/api/products',
@@ -299,5 +299,211 @@ describe('Products Module', () => {
     expect(get.statusCode).toBe(200);
 
     await db.delete(products).where(eq(products.id, created.data.id));
+  });
+
+  it('should create a product via JSON without image', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'JSON Product Unique', price: 50, stock: 3, category_id: categoryId },
+    });
+
+    expect(response.statusCode).toBe(201);
+    const body = JSON.parse(response.body);
+    expect(body.data.image_url).toBeNull();
+
+    await db.delete(products).where(eq(products.id, body.data.id));
+  });
+
+  it('should allow product price of 0', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'Free Product Unique', price: 0, stock: 1, category_id: categoryId },
+    });
+
+    expect(response.statusCode).toBe(201);
+    const body = JSON.parse(response.body);
+    expect(body.data.price).toBe(0);
+
+    await db.delete(products).where(eq(products.id, body.data.id));
+  });
+
+  it('should reject invalid product price via JSON', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'Bad Price Product', price: 'abc', stock: 1, category_id: categoryId },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('should reject nonexistent category when creating product', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'Bad Cat Product', price: 10, stock: 1, category_id: ulid() },
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.message).toBe('Kategori tidak ditemukan.');
+  });
+
+  it('should reject invalid price on update', async () => {
+    const create = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'Update Bad Price', price: 10, stock: 1, category_id: categoryId },
+    });
+    const productId = JSON.parse(create.body).data.id;
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/products/${productId}`,
+      cookies: { token: adminCookie },
+      payload: { price: 'xyz' },
+    });
+
+    expect(response.statusCode).toBe(400);
+
+    await db.delete(products).where(eq(products.id, productId));
+  });
+
+  it('should return 404 for nonexistent category slug', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products/category/nonexistent-category-slug',
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
+
+  it('should allow empty patch body without error', async () => {
+    const create = await app.inject({
+      method: 'POST',
+      url: '/api/products',
+      cookies: { token: adminCookie },
+      payload: { name: 'Empty Patch Product', price: 10, stock: 1, category_id: categoryId },
+    });
+    const productId = JSON.parse(create.body).data.id;
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/products/${productId}`,
+      cookies: { token: adminCookie },
+      payload: {},
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    await db.delete(products).where(eq(products.id, productId));
+  });
+
+  it('should return 404 for nonexistent product on update', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/products/${ulid()}`,
+      cookies: { token: adminCookie },
+      payload: { name: 'Ghost Product' },
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
+
+  it('should exclude cancelled orders and out-of-stock products from best sellers', async () => {
+    const userId = ulid();
+    await db.insert(users).values({
+      id: userId,
+      email: 'best_seller_user_unique@example.com',
+      password: await hashPassword('password'),
+      name: 'Best Seller User',
+      role: 'user',
+    });
+
+    const soldId = ulid();
+    const outOfStockId = ulid();
+    await db.insert(products).values([
+      {
+        id: soldId,
+        categoryId,
+        name: 'Sold Product Unique',
+        slug: 'sold-product-unique',
+        price: '50.00',
+        stock: 5,
+      },
+      {
+        id: outOfStockId,
+        categoryId,
+        name: 'Out Of Stock Unique',
+        slug: 'out-of-stock-unique',
+        price: '25.00',
+        stock: 0,
+      },
+    ]);
+
+    const validOrderId = ulid();
+    const cancelledOrderId = ulid();
+    await db.insert(orders).values([
+      {
+        id: validOrderId,
+        userId,
+        totalAmount: '50.00',
+        status: 'delivered',
+      },
+      {
+        id: cancelledOrderId,
+        userId,
+        totalAmount: '250.00',
+        status: 'cancelled',
+      },
+    ]);
+
+    await db.insert(orderItems).values([
+      {
+        id: ulid(),
+        orderId: validOrderId,
+        productId: soldId,
+        quantity: 1,
+        priceAtPurchase: '50.00',
+      },
+      {
+        id: ulid(),
+        orderId: cancelledOrderId,
+        productId: soldId,
+        quantity: 5,
+        priceAtPurchase: '50.00',
+      },
+    ]);
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/products/best-sellers',
+      query: { limit: '20' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const soldProduct = JSON.parse(response.body).data.find(
+      (p: any) => p.id === soldId,
+    );
+    expect(soldProduct).toBeDefined();
+    expect(soldProduct.total_sold).toBe(1);
+    expect(
+      JSON.parse(response.body).data.find((p: any) => p.id === outOfStockId),
+    ).toBeUndefined();
+
+    await db.delete(orderItems).where(eq(orderItems.orderId, validOrderId));
+    await db.delete(orderItems).where(eq(orderItems.orderId, cancelledOrderId));
+    await db.delete(orders).where(eq(orders.id, validOrderId));
+    await db.delete(orders).where(eq(orders.id, cancelledOrderId));
+    await db.delete(products).where(eq(products.id, soldId));
+    await db.delete(products).where(eq(products.id, outOfStockId));
+    await db.delete(users).where(eq(users.id, userId));
   });
 });

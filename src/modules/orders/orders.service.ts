@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { orders, orderItems, cartItems, products, users } from '../../db/schema.js';
-import { eq, sql, desc, asc, and, gte, lte, count } from 'drizzle-orm';
+import { eq, sql, desc, asc, and, ne, count } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { CartsService } from '../carts/carts.service.js';
 import { type ListOrdersQuery } from './orders.schema.js';
@@ -14,11 +14,12 @@ export class OrdersService {
 
   /**
    * Get order report grouped by date within a date range.
-   * @param startDate - Start date for report
-   * @param endDate - End date for report (inclusive)
+   * Cancelled orders are excluded.
+   * @param startDate - Start date (YYYY-MM-DD)
+   * @param endDate - End date (YYYY-MM-DD, inclusive)
    * @returns Array of report entries with date, total_amount, and order_count
    */
-  async getReport(startDate: Date, endDate: Date) {
+  async getReport(startDate: string, endDate: string) {
     const result = await db
       .select({
         date: sql<string>`DATE(${orders.createdAt})`,
@@ -26,7 +27,13 @@ export class OrdersService {
         order_count: sql<number>`COUNT(${orders.id})`,
       })
       .from(orders)
-      .where(and(gte(orders.createdAt, startDate), lte(orders.createdAt, endDate)))
+      .where(
+        and(
+          sql`DATE(${orders.createdAt}) >= ${startDate}`,
+          sql`DATE(${orders.createdAt}) <= ${endDate}`,
+          ne(orders.status, 'cancelled'),
+        ),
+      )
       .groupBy(sql`DATE(${orders.createdAt})`)
       .orderBy(sql`DATE(${orders.createdAt})`);
 

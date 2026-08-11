@@ -74,4 +74,36 @@ describe('Auth Module', () => {
     expect(response.statusCode).toBe(200);
     expect(response.cookies.some((c) => c.name === 'token')).toBe(true);
   });
+
+  it('should reject duplicate email on register', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: {
+        email: 'auth_test@example.com',
+        password: 'password123',
+        name: 'Auth Test',
+      },
+    });
+
+    expect(response.statusCode).toBe(409);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.message).toBe('Email sudah terdaftar. Gunakan email lain.');
+  });
+
+  it('should reject an expired refresh token', async () => {
+    const expiredToken = await app.jwt.sign(
+      { id: 'nonexistent', email: 'nonexistent@example.com', role: 'user' },
+      { expiresIn: '-1s' },
+    );
+    const signed = (app as any).signCookie(expiredToken);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/refresh',
+      cookies: { refresh_token: signed },
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
 });

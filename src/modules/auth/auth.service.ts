@@ -89,6 +89,16 @@ export class AuthService {
   }
 
   /**
+   * Find user by email.
+   * @param email - Email to search
+   * @returns User object if found, undefined otherwise
+   */
+  async findByEmail(email: string) {
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return user;
+  }
+
+  /**
    * Change user password after validating old password.
    * @param userId - User ULID
    * @param oldPass - Current password to verify

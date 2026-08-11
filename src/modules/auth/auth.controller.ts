@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { AuthService } from './auth.service.js';
+import { type AuthService } from './auth.service.js';
 import { type RegisterBody, type LoginBody, type ChangePasswordBody } from './auth.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 import { env } from '../../config/env.js';
@@ -37,6 +37,11 @@ export class AuthController {
         request.log.warn({ userId: request.user?.id }, 'Non-admin attempted to register admin account');
         return reply.status(403).send(formatError(403, 'Hanya admin yang dapat mendaftarkan akun admin.'));
       }
+    }
+
+    const existing = await this.authService.findByEmail(request.body.email);
+    if (existing) {
+      return reply.status(409).send(formatError(409, 'Email sudah terdaftar. Gunakan email lain.'));
     }
 
     const user = await this.authService.register(request.body);
@@ -93,6 +98,13 @@ export class AuthController {
       return reply.status(401).send(formatError(401, 'Sesi tidak valid. Silakan login kembali.'));
     }
 
+    try {
+      reply.server.jwt.verify(token);
+    } catch {
+      request.log.warn('Refresh token expired or invalid');
+      return reply.status(401).send(formatError(401, 'Sesi berakhir atau tidak valid. Silakan login kembali.'));
+    }
+
     const user = await this.authService.findByRefreshToken(token);
     if (!user) {
       request.log.warn({ tokenPrefix: token.substring(0, 20) + '...' }, 'Refresh token reuse attempt detected');
@@ -147,8 +159,8 @@ export class AuthController {
     }
 
     return reply
-      .clearCookie('token', { path: '/' })
-      .clearCookie('refresh_token', { path: '/api/auth/refresh' })
+      .clearCookie('token', { path: env.COOKIE_PATH || '/' })
+      .clearCookie('refresh_token', { path: env.REFRESH_COOKIE_PATH || '/api/auth/refresh' })
       .success({ status: 'ok' }, 'Logged out successfully');
   }
 }

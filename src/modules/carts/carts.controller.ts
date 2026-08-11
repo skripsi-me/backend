@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { CartsService } from './carts.service.js';
+import { type CartsService } from './carts.service.js';
 import { type AddToCartBody, type UpdateCartItemBody } from './carts.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
@@ -29,9 +29,16 @@ export class CartsController {
    * @returns 200 with updated cart
    */
   async addItem(request: FastifyRequest<{ Body: AddToCartBody }>, reply: FastifyReply) {
-    const userId = request.user.id;
-    const cart = await this.cartsService.addItem(userId, request.body);
-    return reply.success(cart);
+    try {
+      const userId = request.user.id;
+      const cart = await this.cartsService.addItem(userId, request.body);
+      return reply.success(cart);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Produk tidak ditemukan.') {
+        return reply.status(404).send(formatError(404, 'Produk tidak ditemukan.'));
+      }
+      throw err;
+    }
   }
 
   /**

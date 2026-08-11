@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
-import { products, categories, orderItems } from '../../db/schema.js';
-import { eq, or, and, sql, count, desc, asc, like, type SQL } from 'drizzle-orm';
+import { products, categories, orderItems, orders } from '../../db/schema.js';
+import { eq, or, and, ne, gt, sql, count, desc, asc, like, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type ListProductsQuery } from './products.schema.js';
@@ -60,8 +60,10 @@ export class ProductsService {
         total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
       })
       .from(orderItems)
+      .innerJoin(orders, eq(orderItems.orderId, orders.id))
       .innerJoin(products, eq(orderItems.productId, products.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
+      .where(and(ne(orders.status, 'cancelled'), gt(products.stock, 0)))
       .groupBy(products.id)
       .orderBy(desc(sql`SUM(${orderItems.quantity})`))
       .limit(limit)
@@ -221,6 +223,13 @@ export class ProductsService {
     const offset = (page - 1) * limit;
     const orderBy = query.sort === 'asc' ? asc(products.createdAt) : desc(products.createdAt);
 
+    const [category] = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(eq(categories.slug, categorySlug))
+      .limit(1);
+    if (!category) throw new Error('Kategori tidak ditemukan.');
+
     const [data, totalResult] = await Promise.all([
       db
         .select({
@@ -261,6 +270,20 @@ export class ProductsService {
   }
 
   /**
+   * Check if a category exists by ID.
+   * @param id - Category ULID
+   * @returns True if category exists, false otherwise
+   */
+  async categoryExists(id: string): Promise<boolean> {
+    const [category] = await db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(eq(categories.id, id))
+      .limit(1);
+    return !!category;
+  }
+
+  /**
    * Create a new product.
    * @param data - Product data (name, description, price, stock, category_id, image_url?)
    * @returns Created product object
@@ -291,7 +314,7 @@ export class ProductsService {
    * @returns Unique slug string
    */
   private async generateSlug(name: string): Promise<string> {
-    let slug = name
+    const slug = name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
@@ -341,6 +364,14 @@ export class ProductsService {
     if (data.category_id) {
       updateData.categoryId = data.category_id;
       delete updateData.category_id;
+    }
+
+    for (const key of Object.keys(updateData)) {
+      if (updateData[key] === undefined) delete updateData[key];
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return this.getById(id);
     }
 
     await db.update(products).set(updateData).where(eq(products.id, id));

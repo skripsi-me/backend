@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { UserService } from './user.service.js';
+import { type UserService } from './user.service.js';
 import {
   type CreateUserBody,
   type UpdateUserBody,
@@ -48,6 +48,9 @@ export class UserController {
    */
   async me(request: FastifyRequest, reply: FastifyReply) {
     const user = await this.userService.getById(request.user.id);
+    if (!user) {
+      return reply.status(404).send(formatError(404, 'Pengguna tidak ditemukan.'));
+    }
     return reply.success(user, 'Profile retrieved successfully');
   }
 
@@ -76,6 +79,13 @@ export class UserController {
     request: FastifyRequest<{ Params: { id: string }; Body: UpdateUserBody }>,
     reply: FastifyReply,
   ) {
+    if (request.body.email) {
+      const existing = await this.userService.findByEmail(request.body.email);
+      if (existing && existing.id !== request.params.id) {
+        return reply.status(409).send(formatError(409, 'Email sudah terdaftar. Gunakan email lain.'));
+      }
+    }
+
     const user = await this.userService.update(request.params.id, request.body);
     if (!user) {
       return reply.status(404).send(formatError(404, 'Pengguna tidak ditemukan.'));

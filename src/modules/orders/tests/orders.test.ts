@@ -208,4 +208,78 @@ describe('Orders Module', () => {
     const body = JSON.parse(response.body);
     expect(body.metadata.message).toBe('Data yang dikirim tidak valid. Periksa kembali isian Anda.');
   });
+
+  it('should return 404 when updating status of nonexistent order', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/orders/${ulid()}/status`,
+      cookies: { token: adminCookie },
+      payload: { status: 'shipped' },
+    });
+
+    expect(response.statusCode).toBe(404);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.message).toBe('Pesanan tidak ditemukan.');
+  });
+
+  it('should reject report when start_date is after end_date', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/orders/report',
+      query: { start_date: '2026-02-01', end_date: '2026-01-01' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('should reject report with only one date param', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/orders/report',
+      query: { start_date: '2026-01-01' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('should return report for a valid date range', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/orders/report',
+      query: { start_date: '2026-01-01', end_date: '2026-01-31' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(Array.isArray(body.data)).toBe(true);
+  });
+
+  it('should exclude cancelled orders from report totals', async () => {
+    const cancelledId = ulid();
+    await db.insert(orders).values({
+      id: cancelledId,
+      userId,
+      totalAmount: '5000.00',
+      status: 'cancelled',
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/orders/report',
+      query: { start_date: '2026-01-01', end_date: '2026-01-31' },
+      cookies: { token: adminCookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const dayReport = JSON.parse(response.body).data.find(
+      (r: any) => r.date === '2026-01-01',
+    );
+    expect(dayReport).toBeDefined();
+    expect(dayReport.total_amount).toBe(100);
+    expect(dayReport.order_count).toBe(1);
+  });
 });

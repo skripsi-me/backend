@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { ProductsService } from './products.service.js';
+import { type ProductsService } from './products.service.js';
 import { type ListProductsQuery, type GetBestSellersQuery } from './products.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 import { uploadImage } from '../../shared/utils/imagekit.util.js';
@@ -21,25 +21,19 @@ function extractBodyFields(body: any): Record<string, any> {
 }
 
 async function processImageUpload(request: FastifyRequest): Promise<string | undefined> {
-  let file = await request.file();
+  if (!request.isMultipart()) return undefined;
 
-  if (!file) {
-    const bodyField = (request.body as any)?.image;
-    if (bodyField && typeof bodyField === 'object' && typeof bodyField.mimetype === 'string') {
-      file = bodyField;
-    }
-  }
+  const bodyField = (request.body as any)?.image;
+  if (!bodyField || typeof bodyField.mimetype !== 'string') return undefined;
 
-  if (!file) return undefined;
-
-  if (!ALLOWED_MIMES.includes(file.mimetype)) {
+  if (!ALLOWED_MIMES.includes(bodyField.mimetype)) {
     throw new Error(
-      `Tipe file tidak valid: ${file.mimetype}. Tipe yang diizinkan: ${ALLOWED_MIMES.join(', ')}.`,
+      `Tipe file tidak valid: ${bodyField.mimetype}. Tipe yang diizinkan: ${ALLOWED_MIMES.join(', ')}.`,
     );
   }
 
-  const buffer = await file.toBuffer();
-  return uploadImage(buffer, file.filename);
+  const buffer = await bodyField.toBuffer();
+  return uploadImage(buffer, bodyField.filename);
 }
 
 /**
@@ -115,11 +109,18 @@ export class ProductsController {
     }>,
     reply: FastifyReply,
   ) {
-    const result = await this.productsService.listByCategorySlug(
-      request.params.categorySlug,
-      request.query,
-    );
-    return reply.success(result, 'Products retrieved successfully');
+    try {
+      const result = await this.productsService.listByCategorySlug(
+        request.params.categorySlug,
+        request.query,
+      );
+      return reply.success(result, 'Products retrieved successfully');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Kategori tidak ditemukan.') {
+        return reply.status(404).send(formatError(404, 'Kategori tidak ditemukan.'));
+      }
+      throw err;
+    }
   }
 
   /**
@@ -133,7 +134,21 @@ export class ProductsController {
       const imageUrl = await processImageUpload(request);
       const body = extractBodyFields(request.body);
 
-      if (!body.name || !body.price || body.stock === undefined || !body.category_id) {
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      const price = Number(body.price);
+      const stock = Number(body.stock);
+      const categoryId = typeof body.category_id === 'string' ? body.category_id.trim() : '';
+
+      if (
+        !name ||
+        body.price === undefined ||
+        body.price === null ||
+        body.price === '' ||
+        body.stock === undefined ||
+        body.stock === null ||
+        body.stock === '' ||
+        !categoryId
+      ) {
         return reply
           .status(400)
           .send(
@@ -144,10 +159,28 @@ export class ProductsController {
           );
       }
 
+      if (!Number.isFinite(price) || price < 0) {
+        return reply
+          .status(400)
+          .send(formatError(400, 'Harga harus berupa angka yang valid dan tidak negatif.'));
+      }
+
+      if (!Number.isInteger(stock) || stock < 0) {
+        return reply
+          .status(400)
+          .send(formatError(400, 'Stok harus berupa bilangan bulat yang valid dan tidak negatif.'));
+      }
+
+      if (!(await this.productsService.categoryExists(categoryId))) {
+        return reply.status(400).send(formatError(400, 'Kategori tidak ditemukan.'));
+      }
+
       const product = await this.productsService.create({
         ...body,
-        price: Number(body.price),
-        stock: Number(body.stock),
+        name,
+        price,
+        stock,
+        category_id: categoryId,
         image_url: imageUrl || body.image_url || null,
       });
       return reply.status(201).success(product);
@@ -167,6 +200,35 @@ export class ProductsController {
     try {
       const imageUrl = await processImageUpload(request);
       const body = extractBodyFields(request.body);
+
+      if (typeof body.name === 'string' && body.name.trim() === '') {
+        return reply.status(400).send(formatError(400, 'Nama tidak boleh kosong.'));
+      }
+
+      if (body.price !== undefined && body.price !== null && body.price !== '') {
+        const price = Number(body.price);
+        if (!Number.isFinite(price) || price < 0) {
+          return reply
+            .status(400)
+            .send(formatError(400, 'Harga harus berupa angka yang valid dan tidak negatif.'));
+        }
+        body.price = price;
+      }
+
+      if (body.stock !== undefined && body.stock !== null && body.stock !== '') {
+        const stock = Number(body.stock);
+        if (!Number.isInteger(stock) || stock < 0) {
+          return reply
+            .status(400)
+            .send(formatError(400, 'Stok harus berupa bilangan bulat yang valid dan tidak negatif.'));
+        }
+        body.stock = stock;
+      }
+
+      if (body.category_id && !(await this.productsService.categoryExists(body.category_id))) {
+        return reply.status(400).send(formatError(400, 'Kategori tidak ditemukan.'));
+      }
+
       const product = await this.productsService.update(request.params.id, {
         ...body,
         image_url: imageUrl || body.image_url,

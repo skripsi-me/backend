@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { users } from '../../db/schema.js';
-import { eq, ne, and, count, asc, desc } from 'drizzle-orm';
+import { eq, count, asc, desc } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { hashPassword } from '../../shared/utils/hash.util.js';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
@@ -116,9 +116,13 @@ export class UserService {
       updateData.address = data.address ? sanitize(data.address) : null;
     }
 
-    if (data.phone_number) {
-      updateData.phoneNumber = data.phone_number;
+    if (data.phone_number !== undefined) {
+      updateData.phoneNumber = data.phone_number || null;
       delete updateData.phone_number;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return this.getById(id);
     }
 
     await db.update(users).set(updateData).where(eq(users.id, id));
@@ -142,9 +146,13 @@ export class UserService {
       updateData.address = data.address ? sanitize(data.address) : null;
     }
 
-    if (data.phone_number) {
-      updateData.phoneNumber = data.phone_number;
+    if (data.phone_number !== undefined) {
+      updateData.phoneNumber = data.phone_number || null;
       delete updateData.phone_number;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return this.getById(id);
     }
 
     await db.update(users).set(updateData).where(eq(users.id, id));

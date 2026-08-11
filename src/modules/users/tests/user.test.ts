@@ -131,4 +131,66 @@ describe('User Module', () => {
       emails.indexOf('user_test_admin@example.com'),
     );
   });
+
+  it('should handle empty profile patch without error', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/users/me',
+      cookies: { token: userCookie },
+      payload: {},
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('should allow clearing phone_number', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/users/me',
+      cookies: { token: userCookie },
+      payload: { phone_number: '' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.phone_number).toBeNull();
+  });
+
+  it('should reject admin updating email to an existing user', async () => {
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/users/${userId}`,
+      cookies: { token: adminCookie },
+      payload: { email: 'user_test_admin@example.com' },
+    });
+
+    expect(response.statusCode).toBe(409);
+  });
+
+  it('should return 404 for /me when user was deleted', async () => {
+    const tempId = ulid();
+    await db.insert(users).values({
+      id: tempId,
+      email: 'deleted_user_test@example.com',
+      password: await hashPassword('password'),
+      name: 'Temp Deleted',
+    });
+
+    const login = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: 'deleted_user_test@example.com', password: 'password' },
+    });
+    const token = login.cookies.find((c: any) => c.name === 'token')!.value;
+
+    await db.delete(users).where(eq(users.id, tempId));
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/users/me',
+      cookies: { token },
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
 });

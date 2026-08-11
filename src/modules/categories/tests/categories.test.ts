@@ -73,4 +73,40 @@ describe('Categories Module', () => {
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data.some((c: any) => c.slug === 'test-category-unique')).toBe(true);
   });
+
+  it('should sanitize category name', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/categories',
+      cookies: { token: adminCookie },
+      payload: { name: '<script>alert(1)</script>Cat Sanitize' },
+    });
+
+    expect(response.statusCode).toBe(201);
+    const body = JSON.parse(response.body);
+    expect(body.data.name).toBe('alert(1)Cat Sanitize');
+
+    await db.delete(categories).where(eq(categories.id, body.data.id));
+  });
+
+  it('should handle empty category patch without error', async () => {
+    const create = await app.inject({
+      method: 'POST',
+      url: '/api/categories',
+      cookies: { token: adminCookie },
+      payload: { name: 'Empty Patch Cat' },
+    });
+    const categoryId = JSON.parse(create.body).data.id;
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/categories/${categoryId}`,
+      cookies: { token: adminCookie },
+      payload: {},
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    await db.delete(categories).where(eq(categories.id, categoryId));
+  });
 });

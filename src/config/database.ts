@@ -1,7 +1,6 @@
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
 import { env } from './env.js';
-import * as schema from '../db/schema.js';
 
 // Detect TiDB Cloud (port 4000 or host contains 'tidbcloud')
 const isTiDB = env.DATABASE_PORT === 4000 || env.DATABASE_HOST.includes('tidbcloud');

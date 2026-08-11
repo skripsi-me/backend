@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { CategoriesService } from './categories.service.js';
+import { type CategoriesService } from './categories.service.js';
 import { type CreateCategoryBody, type UpdateCategoryBody } from './categories.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 

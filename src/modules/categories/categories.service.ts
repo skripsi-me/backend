@@ -2,6 +2,7 @@ import { db } from '../../config/database.js';
 import { categories } from '../../db/schema.js';
 import { eq, like } from 'drizzle-orm';
 import { ulid } from 'ulidx';
+import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type CreateCategoryBody, type UpdateCategoryBody } from './categories.schema.js';
 
 /**
@@ -68,9 +69,9 @@ export class CategoriesService {
     const slug = await this.generateSlug(data.name);
     await db.insert(categories).values({
       id,
-      name: data.name,
+      name: sanitize(data.name),
       slug,
-      description: data.description,
+      description: data.description ? sanitize(data.description) : null,
     });
     return this.getById(id);
   }
@@ -83,7 +84,7 @@ export class CategoriesService {
    * @returns Unique slug string
    */
   private async generateSlug(name: string): Promise<string> {
-    let slug = name
+    const slug = name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
@@ -113,8 +114,17 @@ export class CategoriesService {
   async update(id: string, data: UpdateCategoryBody) {
     const updateData: Record<string, unknown> = { ...data };
     if (data.name) {
+      updateData.name = sanitize(data.name);
       updateData.slug = await this.generateSlug(data.name);
     }
+    if (data.description !== undefined) {
+      updateData.description = data.description ? sanitize(data.description) : null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return this.getById(id);
+    }
+
     await db.update(categories).set(updateData).where(eq(categories.id, id));
     return this.getById(id);
   }

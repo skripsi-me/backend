@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { OrdersService } from './orders.service.js';
+import { type OrdersService } from './orders.service.js';
 import { type UpdateOrderStatusBody, type ListOrdersQuery } from './orders.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 
@@ -19,19 +19,32 @@ export class OrdersController {
   async getReport(request: FastifyRequest, reply: FastifyReply) {
     const { start_date, end_date } = request.query as { start_date?: string; end_date?: string };
 
-    let start: Date;
-    let end: Date;
-
     if (start_date && end_date) {
-      start = new Date(start_date);
-      end = new Date(end_date);
-      end.setHours(23, 59, 59, 999);
-    } else {
-      // Default to this month
-      const now = new Date();
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
-      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const start = new Date(`${start_date}T00:00:00`);
+      const end = new Date(`${end_date}T00:00:00`);
+
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        return reply.status(400).send(formatError(400, 'Format tanggal tidak valid. Gunakan YYYY-MM-DD.'));
+      }
+
+      if (start > end) {
+        return reply.status(400).send(formatError(400, 'Tanggal awal harus sebelum tanggal akhir.'));
+      }
+
+      const report = await this.ordersService.getReport(start_date, end_date);
+      return reply.success(report);
     }
+
+    if (start_date || end_date) {
+      return reply.status(400).send(formatError(400, 'Harap kirim start_date dan end_date sekaligus.'));
+    }
+
+    // Default to this month
+    const now = new Date();
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const end = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+    ).padStart(2, '0')}`;
 
     const report = await this.ordersService.getReport(start, end);
     return reply.success(report);
@@ -110,6 +123,9 @@ export class OrdersController {
     reply: FastifyReply,
   ) {
     const order = await this.ordersService.updateStatus(request.params.id, request.body.status);
+    if (!order) {
+      return reply.status(404).send(formatError(404, 'Pesanan tidak ditemukan.'));
+    }
     return reply.success(order);
   }
 }
