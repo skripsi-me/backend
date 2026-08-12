@@ -22,7 +22,7 @@ export class OrdersService {
   async getReport(startDate: string, endDate: string) {
     const result = await db
       .select({
-        date: sql<string>`DATE(${orders.createdAt})`,
+        date: sql<string>`DATE(MIN(${orders.createdAt}))`,
         total_amount: sql<number>`SUM(${orders.totalAmount})`,
         order_count: sql<number>`COUNT(${orders.id})`,
       })
