@@ -17,6 +17,11 @@ async function setupFulltext() {
 
   try {
     console.log('Adding FULLTEXT indexes...');
+    try {
+      await connection.query('DROP INDEX fulltext_idx ON products');
+    } catch (err) {
+      // noop if fulltext_idx doesn't exist
+    }
     await connection.query('ALTER TABLE products ADD FULLTEXT INDEX name_fulltext_idx (name)');
     await connection.query('ALTER TABLE products ADD FULLTEXT INDEX desc_fulltext_idx (description)');
     console.log('FULLTEXT indexes added successfully.');

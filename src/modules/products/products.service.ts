@@ -64,7 +64,22 @@ export class ProductsService {
       .innerJoin(products, eq(orderItems.productId, products.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .where(and(ne(orders.status, 'cancelled'), gt(products.stock, 0)))
-      .groupBy(products.id)
+      .groupBy(
+        products.id,
+        products.categoryId,
+        products.name,
+        products.slug,
+        products.description,
+        products.price,
+        products.stock,
+        products.imageUrl,
+        products.createdAt,
+        products.updatedAt,
+        categories.id,
+        categories.name,
+        categories.slug,
+        categories.description,
+      )
       .orderBy(desc(sql`SUM(${orderItems.quantity})`))
       .limit(limit)
       .offset(offset);
@@ -91,8 +106,8 @@ export class ProductsService {
     if (query.search) {
       // Use MATCH AGAINST for fulltext search
       whereClause = or(
-        sql`MATCH(${products.name}) AGAINST(${query.search} IN NATURAL LANGUAGE MODE)`,
-        sql`MATCH(${products.description}) AGAINST(${query.search} IN NATURAL LANGUAGE MODE)`,
+        sql`MATCH(${products.name}) AGAINST(${query.search} IN BOOLEAN MODE)`,
+        sql`MATCH(${products.description}) AGAINST(${query.search} IN BOOLEAN MODE)`,
       );
     }
 
