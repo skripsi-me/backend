@@ -3,6 +3,7 @@ import { products, categories, orderItems, orders } from '../../db/schema.js';
 import { eq, or, and, ne, gt, sql, count, desc, asc, like, type SQL } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
+import { generateUniqueSlug } from '../../shared/utils/slug.util.js';
 import { type ListProductsQuery } from './products.schema.js';
 
 const selectProductColumns = {
@@ -276,28 +277,14 @@ export class ProductsService {
    * @param name - The name to generate slug from
    * @returns Unique slug string
    */
-  private async generateSlug(name: string): Promise<string> {
-    const slug = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 100)
-      .replace(/-+$/, '');
-
-    const existing = await db
-      .select({ slug: products.slug })
-      .from(products)
-      .where(like(products.slug, `${slug}%`));
-
-    if (existing.length === 0) return slug;
-
-    let counter = 1;
-    while (existing.some((e) => e.slug === `${slug}-${counter}`)) {
-      counter++;
-    }
-    return `${slug}-${counter}`;
+  private generateSlug(name: string): Promise<string> {
+    return generateUniqueSlug(name, async (prefix) => {
+      const rows = await db
+        .select({ slug: products.slug })
+        .from(products)
+        .where(like(products.slug, `${prefix}%`));
+      return rows.map((row) => row.slug);
+    }, 100);
   }
 
   /**

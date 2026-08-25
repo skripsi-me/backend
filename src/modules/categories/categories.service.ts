@@ -3,6 +3,7 @@ import { categories } from '../../db/schema.js';
 import { eq, like } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
+import { generateUniqueSlug } from '../../shared/utils/slug.util.js';
 import { type CreateCategoryBody, type UpdateCategoryBody } from './categories.schema.js';
 
 /**
@@ -83,26 +84,14 @@ export class CategoriesService {
    * @param name - The name to generate slug from
    * @returns Unique slug string
    */
-  private async generateSlug(name: string): Promise<string> {
-    const slug = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-
-    const existing = await db
-      .select({ slug: categories.slug })
-      .from(categories)
-      .where(like(categories.slug, `${slug}%`));
-
-    if (existing.length === 0) return slug;
-
-    let counter = 1;
-    while (existing.some((e) => e.slug === `${slug}-${counter}`)) {
-      counter++;
-    }
-    return `${slug}-${counter}`;
+  private generateSlug(name: string): Promise<string> {
+    return generateUniqueSlug(name, async (prefix) => {
+      const rows = await db
+        .select({ slug: categories.slug })
+        .from(categories)
+        .where(like(categories.slug, `${prefix}%`));
+      return rows.map((row) => row.slug);
+    });
   }
 
   /**
