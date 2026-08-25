@@ -136,27 +136,7 @@ export class UserService {
    * @returns Updated user object
    */
   async updateProfile(id: string, data: UpdateProfileBody) {
-    const updateData: any = { ...data };
-
-    if (data.name !== undefined) {
-      updateData.name = sanitize(data.name);
-    }
-
-    if (data.address !== undefined) {
-      updateData.address = data.address ? sanitize(data.address) : null;
-    }
-
-    if (data.phone_number !== undefined) {
-      updateData.phoneNumber = data.phone_number || null;
-      delete updateData.phone_number;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return this.getById(id);
-    }
-
-    await db.update(users).set(updateData).where(eq(users.id, id));
-    return this.getById(id);
+    return this.update(id, data);
   }
 
   /**
