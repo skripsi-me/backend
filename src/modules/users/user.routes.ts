@@ -26,7 +26,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Get current user profile',
       description: 'Returns the profile of the currently authenticated user.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, userController.me.bind(userController) as any);
 
@@ -36,7 +36,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Update current user profile',
       description: 'Updates the profile of the currently authenticated user.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, userController.updateProfile.bind(userController) as any);
 
@@ -47,7 +47,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Get all users (Admin)',
       description: 'Returns a list of all users. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, userController.getAll.bind(userController) as any);
@@ -58,7 +58,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Get user by ID (Admin)',
       description: 'Returns a user by their ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, userController.getById.bind(userController) as any);
@@ -69,7 +69,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Create new user (Admin)',
       description: 'Creates a new user account. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, userController.create.bind(userController) as any);
@@ -80,7 +80,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Update user (Admin)',
       description: 'Updates a user account by their ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, userController.update.bind(userController) as any);
@@ -91,7 +91,7 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       tags: ['Users'],
       summary: 'Delete user (Admin)',
       description: 'Deletes a user account by their ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, userController.delete.bind(userController) as any);

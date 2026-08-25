@@ -42,7 +42,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Products'],
       summary: 'Get product by ID (Admin)',
       description: 'Returns a product by its ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly] 
   }, productsController.getById.bind(productsController) as any);
@@ -70,7 +70,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Products'],
       summary: 'Create new product (Admin)',
       description: 'Creates a new product. Slug is auto-generated from name. Required admin privileges. Supports image upload via multipart/form-data.',
-      security: [{ bearerAuth: [] }],
+      security: [{ cookieAuth: [] }],
       response: CreateProductSchema.response,
     },
     onRequest: [fastify.adminOnly],
@@ -82,7 +82,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Products'],
       summary: 'Update product (Admin)',
       description: 'Updates a product by its ULID. Slug is auto-regenerated when name changes. Required admin privileges. Supports image upload via multipart/form-data.',
-      security: [{ bearerAuth: [] }],
+      security: [{ cookieAuth: [] }],
       response: UpdateProductSchema.response,
     },
     onRequest: [fastify.adminOnly],
@@ -94,7 +94,7 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Products'],
       summary: 'Delete product (Admin)',
       description: 'Deletes a product by its ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, productsController.delete.bind(productsController) as any);

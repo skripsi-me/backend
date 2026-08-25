@@ -23,7 +23,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'Get order report for chart (Admin)',
       description: 'Returns aggregated order data grouped by date for a given range. Defaults to current month.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, ordersController.getReport.bind(ordersController) as any);
@@ -34,7 +34,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'Create order from cart',
       description: 'Creates a new order using the items currently in the user shopping cart.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, ordersController.create.bind(ordersController) as any);
 
@@ -44,7 +44,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'Get current user orders',
       description: 'Returns a list of orders placed by the currently authenticated user.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, ordersController.listMine.bind(ordersController) as any);
 
@@ -54,7 +54,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'Get order by ID',
       description: 'Returns details of a specific order by its ULID.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, ordersController.getById.bind(ordersController) as any);
 
@@ -65,7 +65,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'List all orders (Admin)',
       description: 'Returns a list of all orders in the system. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, ordersController.listAll.bind(ordersController) as any);
@@ -76,7 +76,7 @@ export const ordersRoutes = async (fastify: FastifyInstance) => {
       tags: ['Orders'],
       summary: 'Update order status (Admin)',
       description: 'Updates the status of an order. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, ordersController.updateStatus.bind(ordersController) as any);

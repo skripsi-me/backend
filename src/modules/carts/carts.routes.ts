@@ -22,7 +22,7 @@ export const cartsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Carts'],
       summary: 'Get current user cart',
       description: 'Returns the shopping cart for the currently authenticated user.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, cartsController.getCart.bind(cartsController));
 
@@ -32,7 +32,7 @@ export const cartsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Carts'],
       summary: 'Add item to cart',
       description: 'Adds a product to the user shopping cart.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, cartsController.addItem.bind(cartsController));
 
@@ -42,7 +42,7 @@ export const cartsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Carts'],
       summary: 'Update cart item quantity',
       description: 'Updates the quantity of a specific item in the shopping cart.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, cartsController.updateItem.bind(cartsController));
 
@@ -52,7 +52,7 @@ export const cartsRoutes = async (fastify: FastifyInstance) => {
       tags: ['Carts'],
       summary: 'Remove item from cart',
       description: 'Removes a specific item from the shopping cart.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     } 
   }, cartsController.removeItem.bind(cartsController));
 };

@@ -76,7 +76,7 @@ export const authRoutes = async (fastify: FastifyInstance) => {
       tags: ['Auth'],
       summary: 'Change password',
       description: 'Updates the password for the currently authenticated user.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
   }, authController.changePassword.bind(authController) as any);
 };

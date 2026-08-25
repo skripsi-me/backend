@@ -39,7 +39,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       tags: ['Categories'],
       summary: 'Create new category (Admin)',
       description: 'Creates a new product category. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, categoriesController.create.bind(categoriesController) as any);
@@ -50,7 +50,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       tags: ['Categories'],
       summary: 'Update category (Admin)',
       description: 'Updates a product category by its ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, categoriesController.update.bind(categoriesController) as any);
@@ -61,7 +61,7 @@ export const categoriesRoutes = async (fastify: FastifyInstance) => {
       tags: ['Categories'],
       summary: 'Delete category (Admin)',
       description: 'Deletes a product category by its ULID. Required admin privileges.',
-      security: [{ bearerAuth: [] }]
+      security: [{ cookieAuth: [] }]
     },
     onRequest: [fastify.adminOnly],
   }, categoriesController.delete.bind(categoriesController) as any);

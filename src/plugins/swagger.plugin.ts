@@ -19,10 +19,11 @@ export default fp(async (fastify: FastifyInstance) => {
       ],
       components: {
         securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
+          cookieAuth: {
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'token',
+            description: 'JWT access token (HttpOnly signed cookie). Set via POST /api/auth/login.',
           },
         },
       },
