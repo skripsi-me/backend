@@ -1,17 +1,10 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { createStandardResponseSchema } from '../../shared/utils/response.util.js';
-import { UserSchema } from '../users/user.schema.js';
+import { UserSchema, CreateUserSchema } from '../users/user.schema.js';
 
 /** Schema for user registration request body */
 export const RegisterSchema = {
-  body: Type.Object({
-    email: Type.String({ format: 'email', description: 'User email address' }),
-    password: Type.String({ minLength: 8, description: 'User password (min 8 characters)' }),
-    name: Type.String({ minLength: 1, description: 'User full name' }),
-    address: Type.Optional(Type.String({ description: 'User physical address' })),
-    phone_number: Type.Optional(Type.String({ description: 'User contact phone number' })),
-    role: Type.Optional(Type.Union([Type.Literal('user'), Type.Literal('admin')], { description: 'User role' })),
-  }),
+  body: CreateUserSchema.body,
   response: {
     201: createStandardResponseSchema(UserSchema),
   },

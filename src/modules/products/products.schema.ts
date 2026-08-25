@@ -1,7 +1,5 @@
 import { Type, type Static } from '@sinclair/typebox';
 import {
-  DEFAULT_LIMIT,
-  MAX_LIMIT,
   PaginationMetaSchema,
   PaginationQuerySchema,
   SortQuerySchema,
@@ -154,17 +152,7 @@ export const BestSellerProductSchema = Type.Intersect([
 
 /** Schema for getting best seller products */
 export const GetBestSellersSchema = {
-  query: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1, default: 1, description: 'Page number' })),
-    limit: Type.Optional(
-      Type.Number({
-        minimum: 1,
-        maximum: MAX_LIMIT,
-        default: DEFAULT_LIMIT,
-        description: 'Number of products to show',
-      }),
-    ),
-  }),
+  query: PaginationQuerySchema,
   response: {
     200: createStandardResponseSchema(Type.Array(BestSellerProductSchema)),
   },
