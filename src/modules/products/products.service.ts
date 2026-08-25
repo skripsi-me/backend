@@ -5,6 +5,22 @@ import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { type ListProductsQuery } from './products.schema.js';
 
+const selectProductColumns = {
+  id: products.id,
+  category_id: products.categoryId,
+  name: products.name,
+  slug: products.slug,
+  description: products.description,
+  price: products.price,
+  stock: products.stock,
+  image_url: products.imageUrl,
+  category_name: categories.name,
+  category_slug: categories.slug,
+  category_description: categories.description,
+  created_at: products.createdAt,
+  updated_at: products.updatedAt,
+};
+
 /**
  * Service for product management operations.
  * Handles CRUD operations, search, filtering, and best sellers.
@@ -44,19 +60,7 @@ export class ProductsService {
 
     const result = await db
       .select({
-        id: products.id,
-        category_id: products.categoryId,
-        name: products.name,
-        slug: products.slug,
-        description: products.description,
-        price: products.price,
-        stock: products.stock,
-        image_url: products.imageUrl,
-        category_name: categories.name,
-        category_slug: categories.slug,
-        category_description: categories.description,
-        created_at: products.createdAt,
-        updated_at: products.updatedAt,
+        ...selectProductColumns,
         total_sold: sql<number>`CAST(SUM(${orderItems.quantity}) AS UNSIGNED)`,
       })
       .from(orderItems)
@@ -125,21 +129,7 @@ export class ProductsService {
 
     const [data, totalResult] = await Promise.all([
       db
-        .select({
-          id: products.id,
-          category_id: products.categoryId,
-          name: products.name,
-          slug: products.slug,
-          description: products.description,
-          price: products.price,
-          stock: products.stock,
-          image_url: products.imageUrl,
-          category_name: categories.name,
-          category_slug: categories.slug,
-          category_description: categories.description,
-          created_at: products.createdAt,
-          updated_at: products.updatedAt,
-        })
+        .select(selectProductColumns)
         .from(products)
         .leftJoin(categories, eq(products.categoryId, categories.id))
         .where(whereClause)
@@ -170,21 +160,7 @@ export class ProductsService {
    */
   async getById(id: string) {
     const [product] = await db
-      .select({
-        id: products.id,
-        category_id: products.categoryId,
-        name: products.name,
-        slug: products.slug,
-        description: products.description,
-        price: products.price,
-        stock: products.stock,
-        image_url: products.imageUrl,
-        category_name: categories.name,
-        category_slug: categories.slug,
-        category_description: categories.description,
-        created_at: products.createdAt,
-        updated_at: products.updatedAt,
-      })
+      .select(selectProductColumns)
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .where(eq(products.id, id))
@@ -200,21 +176,7 @@ export class ProductsService {
    */
   async getBySlug(slug: string) {
     const [product] = await db
-      .select({
-        id: products.id,
-        category_id: products.categoryId,
-        name: products.name,
-        slug: products.slug,
-        description: products.description,
-        price: products.price,
-        stock: products.stock,
-        image_url: products.imageUrl,
-        category_name: categories.name,
-        category_slug: categories.slug,
-        category_description: categories.description,
-        created_at: products.createdAt,
-        updated_at: products.updatedAt,
-      })
+      .select(selectProductColumns)
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .where(eq(products.slug, slug))
@@ -247,21 +209,7 @@ export class ProductsService {
 
     const [data, totalResult] = await Promise.all([
       db
-        .select({
-          id: products.id,
-          category_id: products.categoryId,
-          name: products.name,
-          slug: products.slug,
-          description: products.description,
-          price: products.price,
-          stock: products.stock,
-          image_url: products.imageUrl,
-          category_name: categories.name,
-          category_slug: categories.slug,
-          category_description: categories.description,
-          created_at: products.createdAt,
-          updated_at: products.updatedAt,
-        })
+        .select(selectProductColumns)
         .from(products)
         .innerJoin(categories, eq(products.categoryId, categories.id))
         .where(eq(categories.slug, categorySlug))
