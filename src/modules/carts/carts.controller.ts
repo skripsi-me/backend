@@ -2,6 +2,7 @@ import { type FastifyReply, type FastifyRequest } from 'fastify';
 import { type CartsService } from './carts.service.js';
 import { type AddToCartBody, type UpdateCartItemBody } from './carts.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
+import { NotFoundError } from '../../shared/utils/errors.js';
 
 /**
  * Controller for shopping cart endpoints.
@@ -34,8 +35,8 @@ export class CartsController {
       const cart = await this.cartsService.addItem(userId, request.body);
       return reply.success(cart);
     } catch (err) {
-      if (err instanceof Error && err.message === 'Produk tidak ditemukan.') {
-        return reply.status(404).send(formatError(404, 'Produk tidak ditemukan.'));
+      if (err instanceof NotFoundError) {
+        return reply.status(404).send(formatError(404, err.message));
       }
       throw err;
     }
@@ -53,8 +54,8 @@ export class CartsController {
       const cart = await this.cartsService.updateItem(userId, request.params.itemId, request.body);
       return reply.success(cart);
     } catch (err) {
-      if (err instanceof Error && err.message === 'Item keranjang tidak ditemukan.') {
-        return reply.status(404).send(formatError(404, 'Item keranjang tidak ditemukan.'));
+      if (err instanceof NotFoundError) {
+        return reply.status(404).send(formatError(404, err.message));
       }
       throw err;
     }
@@ -72,8 +73,8 @@ export class CartsController {
       const cart = await this.cartsService.removeItem(userId, request.params.itemId);
       return reply.success(cart);
     } catch (err) {
-      if (err instanceof Error && err.message === 'Item keranjang tidak ditemukan.') {
-        return reply.status(404).send(formatError(404, 'Item keranjang tidak ditemukan.'));
+      if (err instanceof NotFoundError) {
+        return reply.status(404).send(formatError(404, err.message));
       }
       throw err;
     }

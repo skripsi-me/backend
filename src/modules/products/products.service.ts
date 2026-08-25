@@ -4,6 +4,7 @@ import { eq, or, and, ne, gt, sql, count, desc, asc, like, type SQL } from 'driz
 import { ulid } from 'ulidx';
 import { sanitize } from '../../shared/utils/sanitize.util.js';
 import { generateUniqueSlug } from '../../shared/utils/slug.util.js';
+import { NotFoundError } from '../../shared/utils/errors.js';
 import { type ListProductsQuery } from './products.schema.js';
 
 const selectProductColumns = {
@@ -206,7 +207,7 @@ export class ProductsService {
       .from(categories)
       .where(eq(categories.slug, categorySlug))
       .limit(1);
-    if (!category) throw new Error('Kategori tidak ditemukan.');
+    if (!category) throw new NotFoundError('Kategori tidak ditemukan.');
 
     const [data, totalResult] = await Promise.all([
       db

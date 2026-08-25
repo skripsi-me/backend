@@ -3,6 +3,7 @@ import { type ProductsService } from './products.service.js';
 import { type ListProductsQuery, type GetBestSellersQuery } from './products.schema.js';
 import { formatError } from '../../shared/utils/response.util.js';
 import { uploadImage } from '../../shared/utils/imagekit.util.js';
+import { NotFoundError } from '../../shared/utils/errors.js';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
@@ -116,8 +117,8 @@ export class ProductsController {
       );
       return reply.success(result, 'Products retrieved successfully');
     } catch (err) {
-      if (err instanceof Error && err.message === 'Kategori tidak ditemukan.') {
-        return reply.status(404).send(formatError(404, 'Kategori tidak ditemukan.'));
+      if (err instanceof NotFoundError) {
+        return reply.status(404).send(formatError(404, err.message));
       }
       throw err;
     }
