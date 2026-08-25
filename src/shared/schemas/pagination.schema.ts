@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox';
-import { createStandardResponseSchema } from '../utils/response.util.js';
 
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 1000;
@@ -35,14 +34,4 @@ export const PaginationMetaSchema = Type.Object({
   total_pages: Type.Number({ description: 'Total number of pages' }),
 });
 
-/** Helper to create paginated response schema for any data type */
-export function createPaginatedResponseSchema<T extends ReturnType<typeof Type.Object>>(
-  dataSchema: T,
-) {
-  return createStandardResponseSchema(
-    Type.Object({
-      data: Type.Array(dataSchema),
-      meta: PaginationMetaSchema,
-    }),
-  );
-}
+
