@@ -1205,7 +1205,7 @@ Cookie: token=<admin-signed-token>
 
 Prefix: `/api/products`
 
-> **Catatan**: Endpoint GET bersifat publik. Endpoint POST, PATCH, DELETE memerlukan adminOnly. POST dan PATCH mendukung `multipart/form-data` untuk upload gambar.
+> **Catatan**: Endpoint GET bersifat publik. Endpoint POST, PATCH, DELETE memerlukan adminOnly. POST dan PATCH mendukung `multipart/form-data` untuk upload gambar. Pengecualian: `POST /api/products/bulk` menggunakan header `x-api-key` (tanpa login), untuk script upload otomatis.
 
 > **Slug**: Di-generate otomatis dari `name` dan di-truncate maksimal 100 karakter. Route param slug mendukung hingga 255 karakter (`maxParamLength`).
 
@@ -1716,6 +1716,93 @@ Content-Type: image/jpeg
 | 401 | Token tidak ada/invalid | `Sesi berakhir. Silakan login kembali.` |
 | 403 | Bukan admin | `Akses khusus admin. Anda tidak memiliki izin.` |
 | 404 | Produk tidak ditemukan | `Produk tidak ditemukan.` |
+
+---
+
+### `POST /api/products/bulk`
+
+Bulk create produk dari array JSON. Untuk script upload otomatis (tanpa login). Per-item: item valid diinsert, item gagal dilaporkan (partial success, tanpa rollback).
+
+**Autentikasi**: Header `x-api-key` (nilai dari env `BULK_UPLOAD_KEY`)
+**Rate Limit**: 10 request/menit
+**Content-Type**: `application/json`
+
+**Request Body:**
+
+```json
+[
+  {
+    "name": "Samsung Galaxy S24 Ultra",
+    "description": "Smartphone Samsung terbaru",
+    "price": 19999000,
+    "stock": 30,
+    "category_id": "01HXYZ123456789ABCDEFGHIJN",
+    "image_url": "https://example.com/galaxy-s24.jpg"
+  },
+  {
+    "name": "iPhone 15 Pro Max",
+    "description": "Smartphone Apple terbaru",
+    "price": 18999000,
+    "stock": 25,
+    "category_id": "01HXYZ123456789ABCDEFGHIJN"
+  }
+]
+```
+
+> Batas maksimal 100 item per request. Key object identik dengan `POST /api/products/`. `image_url` string (tanpa upload file).
+
+**Contoh Request:**
+
+```
+POST /api/products/bulk
+Content-Type: application/json
+x-api-key: <bulk-upload-key>
+
+[ { "name": "...", "price": 100, "stock": 5, "category_id": "01HXYZ..." } ]
+```
+
+**Response 200 Success:**
+
+```json
+{
+  "metadata": {
+    "code": 200,
+    "message": "Success"
+  },
+  "data": [
+    {
+      "index": 0,
+      "status": "success",
+      "product": {
+        "id": "01HXYZ123456789ABCDEFGHIJR",
+        "category_id": "01HXYZ123456789ABCDEFGHIJN",
+        "name": "Samsung Galaxy S24 Ultra",
+        "slug": "samsung-galaxy-s24-ultra",
+        "price": "19999000.00",
+        "stock": 30,
+        "image_url": "https://example.com/galaxy-s24.jpg",
+        "category": {
+          "name": "Elektronik",
+          "slug": "elektronik"
+        }
+      }
+    },
+    {
+      "index": 1,
+      "status": "error",
+      "message": "Kategori tidak ditemukan."
+    }
+  ]
+}
+```
+
+**Error:**
+
+| Code | Kondisi | Message |
+|---|---|---|
+| 400 | Shape body tidak valid (bukan array / field wajib kurang) | `Data yang dikirim tidak valid. Periksa kembali isian Anda.` |
+| 401 | Header `x-api-key` hilang/salah | `Akses ditolak. API key tidak valid.` |
+| 413 | Lebih dari 100 item | `Ukuran file terlalu besar. Maksimal 5MB.` |
 
 ---
 
