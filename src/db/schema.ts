@@ -9,11 +9,13 @@ export const users = mysqlTable('users', {
   address: text('address'),
   phoneNumber: varchar('phone_number', { length: 20 }),
   role: varchar('role', { length: 20 }).notNull().default('user'),
-  refreshToken: varchar('refresh_token', { length: 255 }),
   refreshTokenHash: varchar('refresh_token_hash', { length: 64 }),
+  refreshTokenHashPrev: varchar('refresh_token_hash_prev', { length: 64 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  refreshHashIndex: index('refresh_token_hash_idx').on(table.refreshTokenHash),
+}));
 
 export const categories = mysqlTable('categories', {
   id: varchar('id', { length: 26 }).primaryKey(),

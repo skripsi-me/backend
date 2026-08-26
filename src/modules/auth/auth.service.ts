@@ -1,6 +1,6 @@
 import { db } from '../../config/database.js';
 import { users } from '../../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { ulid } from 'ulidx';
 import { createHash } from 'crypto';
 import { hashPassword, comparePassword } from '../../shared/utils/hash.util.js';
@@ -66,25 +66,52 @@ export class AuthService {
   }
 
   /**
-   * Update refresh token in database.
+   * Update refresh token in database. Rotates hash chain (current + prev)
+   * so parallel refreshes and short replay windows converge.
    * @param userId - User ULID
    * @param token - New refresh token or null to clear
    */
   async updateRefreshToken(userId: string, token: string | null) {
     const hash = token ? hashToken(token) : null;
+
+    if (hash === null) {
+      await db.update(users)
+        .set({ refreshTokenHash: null, refreshTokenHashPrev: null })
+        .where(eq(users.id, userId));
+      return;
+    }
+
+    const [user] = await db
+      .select({ refreshTokenHash: users.refreshTokenHash })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
     await db.update(users)
-      .set({ refreshToken: token, refreshTokenHash: hash })
+      .set({
+        refreshTokenHash: hash,
+        refreshTokenHashPrev: user?.refreshTokenHash ?? null,
+      })
       .where(eq(users.id, userId));
   }
 
   /**
-   * Find user by refresh token hash.
+   * Find user by refresh token hash (current or previous generation).
    * @param token - Refresh token to search
    * @returns User object if found, null otherwise
    */
   async findByRefreshToken(token: string) {
     const hash = hashToken(token);
-    const [user] = await db.select().from(users).where(eq(users.refreshTokenHash, hash)).limit(1);
+    const [user] = await db
+      .select({ id: users.id, email: users.email, role: users.role })
+      .from(users)
+      .where(
+        or(
+          eq(users.refreshTokenHash, hash),
+          eq(users.refreshTokenHashPrev, hash),
+        ),
+      )
+      .limit(1);
     return user;
   }
 
