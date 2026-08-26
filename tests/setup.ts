@@ -15,3 +15,4 @@ vi.mock('imagekit', () => {
 // Mock environment for tests if needed
 process.env.JWT_SECRET = 'test_secret_key_long_enough_for_jwt';
 process.env.COOKIE_SECRET = 'test_cookie_secret_key_long_enough';
+process.env.BULK_UPLOAD_KEY = 'test_bulk_key';

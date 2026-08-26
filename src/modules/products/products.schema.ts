@@ -166,5 +166,24 @@ export type Product = Static<typeof ProductSchema>;
 export type GetBestSellersQuery = Static<typeof GetBestSellersSchema.query>;
 /** TypeScript type for create product request body */
 export type CreateProductBody = Static<typeof CreateProductSchema.body>;
+
+/** Per-item result for bulk create */
+export const BulkResultSchema = Type.Object({
+  index: Type.Number({ description: 'Index item di request array' }),
+  status: Type.Union([Type.Literal('success'), Type.Literal('error')]),
+  product: Type.Optional(ProductSchema),
+  message: Type.Optional(Type.String()),
+});
+
+/** Schema for bulk creating products (JSON array, public via API key) */
+export const BulkCreateProductsSchema = {
+  body: Type.Array(CreateProductSchema.body, {
+    maxItems: 100,
+    description: 'Array produk yang akan dibuat (maksimal 100)',
+  }),
+  response: {
+    200: createStandardResponseSchema(Type.Array(BulkResultSchema)),
+  },
+};
 /** TypeScript type for update product request body */
 export type UpdateProductBody = Static<typeof UpdateProductSchema.body>;

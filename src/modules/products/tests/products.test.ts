@@ -506,4 +506,88 @@ describe('Products Module', () => {
     await db.delete(products).where(eq(products.id, outOfStockId));
     await db.delete(users).where(eq(users.id, userId));
   });
+
+  it('should bulk create products with valid API key', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products/bulk',
+      headers: { 'x-api-key': 'test_bulk_key' },
+      payload: [
+        { name: 'Bulk Product One', price: 100, stock: 5, category_id: categoryId },
+        { name: 'Bulk Product Two', price: 200, stock: 3, category_id: categoryId },
+      ],
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.metadata.code).toBe(200);
+    expect(body.data).toHaveLength(2);
+    expect(body.data.every((r: any) => r.status === 'success')).toBe(true);
+    expect(body.data[0].product.name).toBe('Bulk Product One');
+
+    await db.delete(products).where(eq(products.name, 'Bulk Product One'));
+    await db.delete(products).where(eq(products.name, 'Bulk Product Two'));
+  });
+
+  it('should report per-item failure for invalid category', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products/bulk',
+      headers: { 'x-api-key': 'test_bulk_key' },
+      payload: [
+        { name: 'Bulk Valid Item', price: 50, stock: 2, category_id: categoryId },
+        { name: 'Bulk Bad Item', price: 50, stock: 2, category_id: '01NONEXISTENT0000000000000' },
+      ],
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data[0].status).toBe('success');
+    expect(body.data[1].status).toBe('error');
+    expect(body.data[1].message).toContain('Kategori tidak ditemukan');
+
+    await db.delete(products).where(eq(products.name, 'Bulk Valid Item'));
+  });
+
+  it('should assign slug suffix for duplicate names in one batch', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products/bulk',
+      headers: { 'x-api-key': 'test_bulk_key' },
+      payload: [
+        { name: 'Duplicate Slug Bulk', price: 10, stock: 1, category_id: categoryId },
+        { name: 'Duplicate Slug Bulk', price: 10, stock: 1, category_id: categoryId },
+      ],
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.data.every((r: any) => r.status === 'success')).toBe(true);
+    expect(body.data[0].product.slug).toBe('duplicate-slug-bulk');
+    expect(body.data[1].product.slug).toBe('duplicate-slug-bulk-1');
+
+    await db.delete(products).where(eq(products.slug, 'duplicate-slug-bulk'));
+    await db.delete(products).where(eq(products.slug, 'duplicate-slug-bulk-1'));
+  });
+
+  it('should reject bulk request without API key', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products/bulk',
+      payload: [{ name: 'No Key Item', price: 10, stock: 1, category_id: categoryId }],
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it('should reject bulk request with wrong API key', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/products/bulk',
+      headers: { 'x-api-key': 'wrong_key' },
+      payload: [{ name: 'Wrong Key Item', price: 10, stock: 1, category_id: categoryId }],
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
 });

@@ -2,7 +2,7 @@ import { type FastifyInstance } from 'fastify';
 import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { ProductsController } from './products.controller.js';
 import { ProductsService } from './products.service.js';
-import { 
+import {
   ListProductsSchema,
   GetProductSchema,
   CreateProductSchema,
@@ -10,13 +10,23 @@ import {
   DeleteProductSchema,
   GetProductBySlugSchema,
   ListProductsByCategorySchema,
-  GetBestSellersSchema
+  GetBestSellersSchema,
+  BulkCreateProductsSchema,
 } from './products.schema.js';
+import { formatError } from '../../shared/utils/response.util.js';
+import { env } from '../../config/env.js';
 
 export const productsRoutes = async (fastify: FastifyInstance) => {
   const provider = fastify.withTypeProvider<TypeBoxTypeProvider>();
   const productsService = new ProductsService();
   const productsController = new ProductsController(productsService);
+
+  // ponytail: API key statis tunggal; per-client/key-rotation butuh tabel key.
+  const apiKeyGuard = async (request: any, reply: any) => {
+    if (request.headers['x-api-key'] !== env.BULK_UPLOAD_KEY) {
+      return reply.status(401).send(formatError(401, 'Akses ditolak. API key tidak valid.'));
+    }
+  };
 
   provider.get('/best-sellers', {
     schema: {
@@ -75,6 +85,22 @@ export const productsRoutes = async (fastify: FastifyInstance) => {
     },
     onRequest: [fastify.adminOnly],
   }, productsController.create.bind(productsController) as any);
+
+  provider.post('/bulk', {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: '1 minute',
+      },
+    },
+    schema: {
+      ...BulkCreateProductsSchema,
+      tags: ['Products'],
+      summary: 'Bulk create products (API key)',
+      description: 'Creates multiple products from a JSON array. Per-item result: valid items inserted, failed items reported. Requires x-api-key header.',
+    },
+    preHandler: [apiKeyGuard],
+  }, productsController.createBulk.bind(productsController) as any);
 
   provider.patch('/:id', {
     schema: {

@@ -192,6 +192,17 @@ export class ProductsController {
   }
 
   /**
+   * Bulk create products (public via API key, partial success).
+   * @param request - Fastify request with BulkCreateProductBody array
+   * @param reply - Fastify reply
+   * @returns 200 with per-item results
+   */
+  async createBulk(request: FastifyRequest<{ Body: Array<Record<string, any>> }>, reply: FastifyReply) {
+    const results = await this.productsService.createBulk(request.body);
+    return reply.status(200).success(results);
+  }
+
+  /**
    * Update product by ID (admin only).
    * @param request - Fastify request with product ID and UpdateProductBody
    * @param reply - Fastify reply

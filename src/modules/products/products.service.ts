@@ -7,6 +7,9 @@ import { generateUniqueSlug } from '../../shared/utils/slug.util.js';
 import { NotFoundError } from '../../shared/utils/errors.js';
 import { type ListProductsQuery } from './products.schema.js';
 
+// ponytail: sequential per-item insert (tiap item 1 slug-query). Batch besar →
+// pre-generate slug + batched insert. YAGNI sekarang.
+
 const selectProductColumns = {
   id: products.id,
   category_id: products.categoryId,
@@ -327,6 +330,36 @@ export class ProductsService {
 
     await db.update(products).set(updateData).where(eq(products.id, id));
     return this.getById(id);
+  }
+
+  /**
+   * Bulk create products (public via API key).
+   * Per-item: valid item inserted, failed item reported. No rollback.
+   * @param items - Array of product data
+   * @returns Array of per-item results
+   */
+  async createBulk(items: any[]) {
+    const results: Array<{
+      index: number;
+      status: 'success' | 'error';
+      product?: any;
+      message?: string;
+    }> = [];
+    for (const [index, item] of items.entries()) {
+      try {
+        if (!(await this.categoryExists(item.category_id))) {
+          throw new NotFoundError('Kategori tidak ditemukan.');
+        }
+        results.push({ index, status: 'success', product: await this.create(item) });
+      } catch (err) {
+        results.push({
+          index,
+          status: 'error',
+          message: err instanceof Error ? err.message : 'Gagal menyimpan produk.',
+        });
+      }
+    }
+    return results;
   }
 
   /**

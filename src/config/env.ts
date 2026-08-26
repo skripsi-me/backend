@@ -36,6 +36,9 @@ const REFRESH_COOKIE_PATH = optionalEnv('REFRESH_COOKIE_PATH', '/api/auth/refres
 // CORS: comma-separated allowed origins (kosongkan untuk reflect semua di dev)
 const CORS_ORIGINS = optionalEnv('CORS_ORIGINS');
 
+// API key untuk endpoint bulk upload produk (tanpa login)
+const BULK_UPLOAD_KEY = optionalEnv('BULK_UPLOAD_KEY');
+
 // Trust proxy — aktifkan jika di belakang reverse proxy (Vercel, nginx)
 const TRUST_PROXY = optionalEnv('TRUST_PROXY', 'false') === 'true';
 
@@ -59,5 +62,6 @@ export const env = {
   IMAGEKIT_PRIVATE_KEY,
   IMAGEKIT_URL_ENDPOINT,
   CORS_ORIGINS,
+  BULK_UPLOAD_KEY,
   TRUST_PROXY,
 };
