@@ -257,6 +257,7 @@ GET /api/products?page=2&limit=10
 | `POST /api/auth/register` | 3 request | 1 menit |
 | `POST /api/auth/login` | 5 request | 1 menit |
 | `POST /api/auth/refresh` | 10 request | 1 menit |
+| `POST /api/products/bulk` | 10 request | 1 menit |
 
 ### Rate Limit Response
 

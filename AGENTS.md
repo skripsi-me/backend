@@ -52,7 +52,6 @@ Routes register at prefixes defined in `src/app.ts` (e.g., `/api/auth`, `/api/pr
 - Single schema file: `src/db/schema.ts` (all tables + relations).
 - Migrations output to `drizzle/` directory.
 - `scripts/setup-fulltext.js` — adds FULLTEXT indexes on `products.name` and `products.description` (run manually).
-- `drop-tables.ts` — destructive utility for dev reset only.
 
 ## Gotchas
 
@@ -60,4 +59,5 @@ Routes register at prefixes defined in `src/app.ts` (e.g., `/api/auth`, `/api/pr
 - `bcrypt` and `esbuild` require native builds — pnpm `onlyBuiltDependencies` allows them.
 - `docker-compose.yml` binds MariaDB to `127.0.0.1` only (not exposed externally).
 - Products search uses MySQL `MATCH AGAINST` (FULLTEXT) — requires indexes from `scripts/setup-fulltext.js`.
+- `ponytail:` InnoDB FULLTEXT di MariaDB tidak mengindeks row baru sampai cache-flush (`OPTIMIZE TABLE`) — produk baru bisa tidak muncul di `?search=`. Upgrade: search strategi lain / OPTIMIZE terjadwal.
 - `pnpm-lock.yaml` is tracked in git — use `pnpm install --frozen-lockfile` (CI does this) or plain `pnpm install` locally.

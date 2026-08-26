@@ -13,7 +13,7 @@ Backend API untuk aplikasi e-commerce yang dibangun dengan Fastify 5, Drizzle OR
 | Autentikasi | JWT + HttpOnly Cookies (Signed) |
 | ID | ULID (26 karakter) |
 | Media | ImageKit.io SDK |
-| Rate Limit | 100 request/menit per IP (auth: 3/5/10 per menit) |
+| Rate Limit | 100 request/menit per IP (auth: 3/5/10, bulk: 10 per menit) |
 | API Docs | Swagger UI (`/docs`) |
 
 ## Format Response Standar
@@ -78,6 +78,7 @@ Semua response API mengikuti format konsisten:
 | GET | `/category/:categorySlug` | Public | List produk per kategori |
 | GET | `/:id` | Admin | Detail produk berdasarkan ID |
 | POST | `/` | Admin | Buat produk baru (slug otomatis) |
+| POST | `/bulk` | API key | Bulk create produk (array JSON, partial per-item) |
 | PATCH | `/:id` | Admin | Update produk |
 | DELETE | `/:id` | Admin | Hapus produk |
 

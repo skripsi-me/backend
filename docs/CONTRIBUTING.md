@@ -157,9 +157,9 @@ Semua penamaan dalam proyek harus konsisten. Berikut konvensi lengkap:
 | Route param | `camelCase` | `/:itemId`, `/:categorySlug` |
 | Request body field | `snake_case` | `category_id`, `phone_number` |
 | Response key | `snake_case` | `total_amount`, `created_at` |
-| Query param | `camelCase` | `?categoryId=xxx` |
+| Query param | `snake_case` | `?category_id=xxx`, `?page=1` |
 
-> **Alasan:** Request body dan response menggunakan `snake_case` karena merupakan konvensi standar REST API yang di-expose ke client. Route param menggunakan `camelCase` karena bersifat internal.
+> **Alasan:** Request body, response, dan query param menggunakan `snake_case` karena di-expose ke client (konvensi REST API). Route param menggunakan `camelCase` karena bersifat internal.
 
 #### TypeBox Schema
 

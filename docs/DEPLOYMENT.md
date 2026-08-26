@@ -152,29 +152,15 @@ pm2 delete ecommerce-api   # Hapus
 
 ## Environment Variables
 
-| Variable | Required | Default | Deskripsi |
-|----------|----------|---------|-----------|
-| `NODE_ENV` | No | `development` | Mode: `development` atau `production` |
-| `PORT` | No | `3000` | Port server |
-| `HOST` | No | `0.0.0.0` | Bind address |
-| `DATABASE_HOST` | Yes | - | Host MariaDB |
-| `DATABASE_PORT` | No | `3306` | Port MariaDB |
-| `DATABASE_USER` | Yes | - | Username DB |
-| `DATABASE_PASSWORD` | Yes | - | Password DB |
-| `DATABASE_NAME` | Yes | - | Nama database |
-| `DATABASE_ROOT_PASSWORD` | No | `root_sandi_skripsi_aman` | Root password MariaDB (hanya Docker) |
-| `JWT_SECRET` | Yes | - | Secret key JWT |
-| `COOKIE_SECRET` | Yes | - | Secret key cookies |
-| `COOKIE_SAMESITE` | No | `lax` | SameSite policy (`strict`/`lax`/`none`) |
-| `COOKIE_SECURE` | No | `false` | Cookie hanya via HTTPS |
-| `COOKIE_DOMAIN` | No | - | Domain scope cookie |
-| `COOKIE_PATH` | No | `/` | Path access token |
-| `REFRESH_COOKIE_PATH` | No | `/api/auth/refresh` | Path refresh token |
-| `CORS_ORIGINS` | No | reflect semua (dev) | Comma-separated allowed origins |
-| `TRUST_PROXY` | No | `false` | `true` jika di belakang reverse proxy |
-| `IMAGEKIT_PUBLIC_KEY` | Yes | - | ImageKit public key |
-| `IMAGEKIT_PRIVATE_KEY` | Yes | - | ImageKit private key |
-| `IMAGEKIT_URL_ENDPOINT` | Yes | - | ImageKit URL endpoint |
+Referensi lengkap semua variabel: **[ENVIRONMENT.md](./ENVIRONMENT.md)**. Hanya yang wajib/berbeda di production:
+
+| Variable | Prod |
+|----------|------|
+| `NODE_ENV` | `production` |
+| `COOKIE_SECURE` | `true` (HTTPS) |
+| `CORS_ORIGINS` | daftar domain frontend |
+| `TRUST_PROXY` | `true` (di belakang nginx) |
+| `BULK_UPLOAD_KEY` | set key acak bila bulk upload dipakai |
 
 ### Contoh `.env` untuk Production
 
@@ -203,6 +189,8 @@ TRUST_PROXY=true
 IMAGEKIT_PUBLIC_KEY=public_xxx
 IMAGEKIT_PRIVATE_KEY=private_xxx
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/xxx
+
+BULK_UPLOAD_KEY=<random_key>
 ```
 
 ---

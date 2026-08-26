@@ -149,17 +149,20 @@ graph TB
         R4[GET /slug/:slug - Get by Slug]
         R5[GET /category/:categorySlug]
         R6[POST / - Create]
-        R7[PUT /:id - Update]
-        R8[DELETE /:id - Delete]
+        R7[POST /bulk - Bulk create, API key]
+        R8[PATCH /:id - Update]
+        R9[DELETE /:id - Delete]
     end
     
     subgraph Auth
         Admin[adminOnly]
+        ApiKey[API key header]
     end
     
     R6 --> Admin
-    R7 --> Admin
+    R7 --> ApiKey
     R8 --> Admin
+    R9 --> Admin
     
     subgraph Controller
         C[ProductsController]
@@ -170,7 +173,7 @@ graph TB
     end
     
     R1 & R2 & R3 & R4 & R5 --> C
-    R6 & R7 & R8 --> C
+    R6 & R7 & R8 & R9 --> C
     C --> S
     S --> DB[(MariaDB)]
     S -.-> IK[ImageKit]
@@ -193,7 +196,7 @@ sequenceDiagram
     DB-->>Auth: User data (hashed password)
     Auth->>Auth: bcrypt.compare(password, hash)
     Auth->>Auth: Generate access token (15 min) + refresh token (7 hari)
-    Auth->>DB: Save refresh_token to users table
+    Auth->>DB: Simpan SHA-256 hash refresh_token (rotasi hash prev)
     Auth-->>C: Set-Cookie: token (access), refresh_token
 ```
 
@@ -209,15 +212,15 @@ sequenceDiagram
 
     C->>Auth: POST /api/auth/refresh (refresh_token cookie)
     Auth->>Auth: Unsign cookie
-    Auth->>DB: Find user by refresh_token
+    Auth->>DB: Find user by refresh_token hash (current atau prev)
     DB-->>Auth: User data
     Auth->>Auth: Generate access token baru (15 min)
     Auth->>Auth: Generate refresh token baru (7 hari)
-    Auth->>DB: Update refresh_token ke yang baru
+    Auth->>DB: Rotasi hash ke yang baru (hash lama jadi prev)
     Auth-->>C: Set-Cookie: token (baru), refresh_token (baru)
 ```
 
-> Refresh token lama akan **invalid** setelah digunakan. Jika ada reuse refresh token lama, request akan ditolak.
+> Refresh token lama **invalid** setelah digunakan. Reuse token dari generasi lama/prev → 401 + log (replay terdeteksi).
 
 ### Auth Guards
 
@@ -260,8 +263,8 @@ erDiagram
         text address
         varchar phone_number
         varchar role "default: user"
-        varchar refresh_token
         varchar refresh_token_hash "sha256 hash refresh token"
+        varchar refresh_token_hash_prev "hash token generasi sebelumnya"
         timestamp created_at
         timestamp updated_at
     }
@@ -336,6 +339,7 @@ erDiagram
 
 | Tabel | Index | Kolom | Tipe |
 |-------|-------|-------|------|
+| users | `refresh_token_hash_idx` | refresh_token_hash | B-Tree |
 | products | `name_idx` | name | B-Tree |
 | products | `slug_idx` | slug | B-Tree |
 | products | `description_idx` | description | B-Tree |
@@ -378,7 +382,7 @@ Fungsi utilitas:
 | `/api/auth` | Auth (login, register, refresh, logout) | Public (register admin: adminOnly) |
 | `/api/users` | User management | Profile: authenticate, Admin: adminOnly |
 | `/api/categories` | Product categories | Public (read), adminOnly (write) |
-| `/api/products` | Product CRUD + search | Public (read), adminOnly (write) |
+| `/api/products` | Product CRUD + search | Public (read), adminOnly (write), `/bulk`: API key |
 | `/api/carts` | Shopping cart | authenticate |
 | `/api/orders` | Orders + reporting | authenticate (stock validation di dalam transaction) |
 | `/health` | Health check | Public |
@@ -400,6 +404,7 @@ Menggunakan `@fastify/rate-limit` dengan konfigurasi:
 | Register | 3 req | 1 menit |
 | Login | 5 req | 1 menit |
 | Refresh | 10 req | 1 menit |
+| Products bulk | 10 req | 1 menit |
 | Global (lainnya) | 100 req | 1 menit |
 
 Response saat limit tercapai:
@@ -417,29 +422,7 @@ Response saat limit tercapai:
 
 ### Environment Variables
 
-Divalidasi otomatis saat startup menggunakan TypeBox. Lihat `src/config/env.ts`.
-
-| Variable | Required | Default | Deskripsi |
-|----------|----------|---------|-----------|
-| NODE_ENV | No | development | Mode aplikasi |
-| PORT | No | 3000 | Port server |
-| HOST | No | 0.0.0.0 | Bind address |
-| DATABASE_HOST | Yes | - | Host MariaDB |
-| DATABASE_PORT | No | 3306 | Port MariaDB |
-| DATABASE_USER | Yes | - | Username DB |
-| DATABASE_PASSWORD | Yes | - | Password DB |
-| DATABASE_NAME | Yes | - | Nama database |
-| DATABASE_ROOT_PASSWORD | No | root_sandi_skripsi_aman | Root password MariaDB (Docker) |
-| JWT_SECRET | Yes | - | Secret key JWT |
-| COOKIE_SECRET | Yes | - | Secret key cookies |
-| COOKIE_SAMESITE | No | lax | SameSite policy (strict/lax/none) |
-| COOKIE_SECURE | No | false | Cookie hanya via HTTPS |
-| COOKIE_DOMAIN | No | - | Domain scope (contoh: .example.com) |
-| COOKIE_PATH | No | / | Path scope untuk access token |
-| REFRESH_COOKIE_PATH | No | /api/auth/refresh | Path scope untuk refresh token |
-| IMAGEKIT_PUBLIC_KEY | Yes | - | ImageKit public key |
-| IMAGEKIT_PRIVATE_KEY | Yes | - | ImageKit private key |
-| IMAGEKIT_URL_ENDPOINT | Yes | - | ImageKit URL endpoint |
+Divalidasi saat startup di `src/config/env.ts`. Referensi lengkap: **[ENVIRONMENT.md](./ENVIRONMENT.md)**.
 
 ### Docker (MariaDB)
 
@@ -466,7 +449,6 @@ backend/
 │   │   ├── database.ts         # MySQL pool + Drizzle
 │   │   └── env.ts              # Env validation
 │   ├── db/
-│   │   ├── index.ts            # Re-exports schema
 │   │   └── schema.ts           # All tables + relations
 │   ├── modules/
 │   │   ├── auth/               # Authentication
@@ -481,11 +463,15 @@ backend/
 │   │   ├── security.plugin.ts
 │   │   └── swagger.plugin.ts
 │   └── shared/
+│       ├── schemas/
+│       │   └── pagination.schema.ts  # Shared pagination/sort schema
 │       └── utils/
+│           ├── errors.ts       # Error classes (NotFoundError)
 │           ├── hash.util.ts    # bcrypt helpers
 │           ├── imagekit.util.ts
 │           ├── response.util.ts
-│           └── sanitize.util.ts # Input sanitization
+│           ├── sanitize.util.ts # Input sanitization
+│           └── slug.util.ts    # generateUniqueSlug
 ├── tests/
 │   └── setup.ts                # Vitest global setup
 ├── .env.example                # Env template

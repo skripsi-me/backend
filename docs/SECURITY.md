@@ -22,10 +22,11 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 - **Guard `authenticate`** — Memverifikasi JWT sebelum akses resource. Jika gagal, langsung return 401 dan menghentikan request (tidak lanjut ke handler).
 - **Guard `adminOnly`** — Memverifikasi role `admin` sebelum akses resource administratif. Memastikan `authenticate` berhasil sebelum cek role.
 - **Register admin** — Hanya pengguna dengan role `admin` yang sudah login yang dapat membuat akun admin baru
+- **Bulk upload** — `POST /api/products/bulk` terbuka tanpa login, tapi wajib header `x-api-key` (`BULK_UPLOAD_KEY`). Fail-closed: key tidak ter-set → endpoint menolak (401)
 
 ### Infrastruktur
 
-- **Rate Limiting** — Register: 3/menit, Login: 5/menit, Refresh: 10/menit, Global: 100/menit
+- **Rate Limiting** — Register: 3/menit, Login: 5/menit, Refresh: 10/menit, Bulk upload: 10/menit, Global: 100/menit
 - **Helmet** — Security headers (CSP, HSTS, dll)
 - **CORS** — Cross-Origin Resource Sharing dikonfigurasi
 - **MariaDB** — Hanya bind ke `127.0.0.1` (tidak exposed ke luar)
@@ -42,10 +43,11 @@ Hanya versi terbaru (`main` branch) yang menerima update keamanan.
 ## Known Limitations
 
 - Cookie-based auth tidak mendukung perangkat mobile native (perlu adaptasi Bearer token)
-- Swagger UI menampilkan `bearerAuth` sebagai opsi, namun implementasi hanya mendukung cookie-based auth
+- Swagger UI menampilkan skema `cookieAuth` — implementasi hanya mendukung cookie-based auth
 - CSRF protection mengandalkan `sameSite: 'lax'` (default) atau `strict` — belum ada double-submit cookie
 - Rate limiting menggunakan in-memory store (tidak distributed)
 - Tidak ada brute-force protection pada login endpoint
+- `BULK_UPLOAD_KEY` adalah API key statis tunggal — tidak ada per-client key / rotasi otomatis
 
 ## Update Keamanan
 

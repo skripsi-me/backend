@@ -87,7 +87,7 @@ Docker Compose juga menggunakan variabel berikut secara tidak langsung:
 
 | Variabel | Required | Default | Deskripsi |
 |----------|----------|---------|-----------|
-| `CORS_ORIGINS` | No | `true` (reflect semua) | Comma-separated allowed origins. Kosongkan untuk reflect semua di dev |
+| `CORS_ORIGINS` | No | dev: reflect semua, prod: nonaktif | Comma-separated allowed origins |
 
 ### Contoh
 
@@ -95,11 +95,19 @@ Docker Compose juga menggunakan variabel berikut secara tidak langsung:
 # Hanya izinkan localhost dan satu domain production
 CORS_ORIGINS=http://localhost:3000,https://mysite.com
 
-# Reflect semua origin (dev mode, TIDAK aman untuk production)
+# Dev mode — reflect semua origin (tidak aman untuk production)
 CORS_ORIGINS=
 ```
 
-> **Catatan:** Di production, selalu set `CORS_ORIGINS` ke domain yang spesifik. `origin: true` (reflect) hanya aman untuk development.
+> **Catatan:** Tanpa `CORS_ORIGINS`, dev (`NODE_ENV != production`) mereflect semua origin; production menonaktifkan CORS (origin `false`). Di production selalu set daftar domain spesifik.
+
+## Variabel Bulk Upload
+
+| Variabel | Required | Default | Deskripsi |
+|----------|----------|---------|-----------|
+| `BULK_UPLOAD_KEY` | Tidak* | - | API key header `x-api-key` untuk `POST /api/products/bulk`. Bila kosong → endpoint menolak semua request (401) |
+
+> **Catatan:** `BULK_UPLOAD_KEY` wajib diisi bila ingin memakai endpoint bulk. Fail-closed: tidak ter-set = endpoint terkunci.
 
 ## Variabel Server
 
@@ -141,6 +149,9 @@ IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/abc123def456
 
 # === CORS ===
 CORS_ORIGINS=http://localhost:3000,https://mysite.com
+
+# === Bulk Upload ===
+BULK_UPLOAD_KEY=your_bulk_upload_key
 
 # === Server ===
 TRUST_PROXY=true
