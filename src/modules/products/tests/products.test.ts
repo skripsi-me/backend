@@ -326,7 +326,7 @@ describe('Products Module', () => {
 
     expect(response.statusCode).toBe(201);
     const body = JSON.parse(response.body);
-    expect(body.data.price).toBe(0);
+    expect(body.data.price).toBe('0.00');
 
     await db.delete(products).where(eq(products.id, body.data.id));
   });
