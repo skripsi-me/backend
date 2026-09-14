@@ -25,6 +25,23 @@ export class AuthController {
     return options;
   }
 
+  private async issueSession(
+    reply: FastifyReply,
+    user: { id: string; email: string; role: string },
+    message: string,
+  ) {
+    const sign = (expiresIn: string) =>
+      reply.jwtSign({ id: user.id, email: user.email, role: user.role }, { expiresIn }) as unknown as Promise<string>;
+    const [accessToken, refreshToken] = await Promise.all([sign('15m'), sign('7d')]);
+
+    await this.authService.updateRefreshToken(user.id, refreshToken);
+
+    return reply
+      .setCookie('token', accessToken, this.getCookieOptions(env.COOKIE_PATH || '/'))
+      .setCookie('refresh_token', refreshToken, this.getCookieOptions(env.REFRESH_COOKIE_PATH || '/api/auth/refresh'))
+      .success({ status: 'ok' }, message);
+  }
+
   /**
    * Register a new user.
    * @param request - Fastify request with RegisterBody
@@ -61,22 +78,7 @@ export class AuthController {
       return reply.status(401).send(formatError(401, 'Email atau password salah, gunakan email dan password yang sudah terdaftar.'));
     }
 
-    const accessToken = (await reply.jwtSign(
-      { id: user.id, email: user.email, role: user.role },
-      { expiresIn: '15m' }
-    )) as unknown as string;
-
-    const refreshToken = (await reply.jwtSign(
-      { id: user.id, email: user.email, role: user.role },
-      { expiresIn: '7d' }
-    )) as unknown as string;
-
-    await this.authService.updateRefreshToken(user.id, refreshToken);
-
-    return reply
-      .setCookie('token', accessToken, this.getCookieOptions(env.COOKIE_PATH || '/'))
-      .setCookie('refresh_token', refreshToken, this.getCookieOptions(env.REFRESH_COOKIE_PATH || '/api/auth/refresh'))
-      .success({ status: 'ok' }, 'Login successful');
+    return this.issueSession(reply, { id: user.id, email: user.email, role: user.role }, 'Login successful');
   }
 
   /**
@@ -111,22 +113,7 @@ export class AuthController {
       return reply.status(401).send(formatError(401, 'Sesi berakhir atau tidak valid. Silakan login kembali.'));
     }
 
-    const newAccessToken = (await reply.jwtSign(
-      { id: user.id, email: user.email, role: user.role },
-      { expiresIn: '15m' }
-    )) as unknown as string;
-
-    const newRefreshToken = (await reply.jwtSign(
-      { id: user.id, email: user.email, role: user.role },
-      { expiresIn: '7d' }
-    )) as unknown as string;
-
-    await this.authService.updateRefreshToken(user.id, newRefreshToken);
-
-    return reply
-      .setCookie('token', newAccessToken, this.getCookieOptions(env.COOKIE_PATH || '/'))
-      .setCookie('refresh_token', newRefreshToken, this.getCookieOptions(env.REFRESH_COOKIE_PATH || '/api/auth/refresh'))
-      .success({ status: 'ok' }, 'Token refreshed');
+    return this.issueSession(reply, { id: user.id, email: user.email, role: user.role }, 'Token refreshed');
   }
 
   /**
