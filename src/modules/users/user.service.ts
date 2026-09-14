@@ -7,7 +7,6 @@ import { sanitize } from '../../shared/utils/sanitize.util.js';
 import {
   type CreateUserBody,
   type UpdateUserBody,
-  type UpdateProfileBody,
   type ListUsersQuery,
 } from './user.schema.js';
 
@@ -127,16 +126,6 @@ export class UserService {
 
     await db.update(users).set(updateData).where(eq(users.id, id));
     return this.getById(id);
-  }
-
-  /**
-   * Update authenticated user's profile.
-   * @param id - User ULID
-   * @param data - Partial profile data (name, address, phone_number)
-   * @returns Updated user object
-   */
-  async updateProfile(id: string, data: UpdateProfileBody) {
-    return this.update(id, data);
   }
 
   /**

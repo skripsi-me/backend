@@ -100,7 +100,7 @@ export class UserController {
    * @returns 200 with updated profile
    */
   async updateProfile(request: FastifyRequest<{ Body: UpdateProfileBody }>, reply: FastifyReply) {
-    const user = await this.userService.updateProfile(request.user.id, request.body);
+    const user = await this.userService.update(request.user.id, request.body);
     return reply.success(user, 'Profile updated successfully');
   }
 
