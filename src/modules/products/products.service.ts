@@ -113,10 +113,12 @@ export class ProductsService {
     let whereClause: SQL<unknown> | undefined = undefined;
 
     if (query.search) {
-      // Use MATCH AGAINST for fulltext search
+      // ponytail: LIKE, not FULLTEXT — TiDB (prod DB) doesn't support MATCH AGAINST.
+      // Upgrade: trigram index or dedicated search engine when catalog grows.
+      const term = `%${query.search}%`;
       whereClause = or(
-        sql`MATCH(${products.name}) AGAINST(${query.search} IN BOOLEAN MODE)`,
-        sql`MATCH(${products.description}) AGAINST(${query.search} IN BOOLEAN MODE)`,
+        like(products.name, term),
+        like(products.description, term),
       );
     }
 
