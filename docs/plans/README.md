@@ -54,3 +54,4 @@ Rollback: `git revert <commit-langkah>` — tiap langkah commit terpisah sehingg
 |---|---|---|
 | 001 | Refactor over-engineering + code smell (kode mati, duplikasi, smell) | DONE |
 | 002 | Bulk product upload `/api/products/bulk` (API key, partial per-item result) | DONE |
+| 003 | Cleanup over-engineering round 2 (dead code, wrapper, duplikasi validasi/issue-session) | IN_PROGRESS |

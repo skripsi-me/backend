@@ -131,13 +131,4 @@ export class CartsService {
 
     return this.getByUserId(userId);
   }
-
-  /**
-   * Clear all items from cart.
-   * @param userId - User ULID
-   */
-  async clearCart(userId: string) {
-    const cart = await this.getByUserId(userId);
-    await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
-  }
 }
