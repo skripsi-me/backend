@@ -7,6 +7,13 @@ import { NotFoundError } from '../../shared/utils/errors.js';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
+function coercePosNumber(value: unknown, integer: boolean): number | null {
+  if (value === undefined || value === null || value === '') return null;
+  const num = Number(value);
+  const valid = Number.isFinite(num) && num >= 0 && (!integer || Number.isInteger(num));
+  return valid ? num : null;
+}
+
 function extractBodyFields(body: any): Record<string, any> {
   if (!body) return {};
   const result: Record<string, any> = {};
@@ -136,8 +143,6 @@ export class ProductsController {
       const body = extractBodyFields(request.body);
 
       const name = typeof body.name === 'string' ? body.name.trim() : '';
-      const price = Number(body.price);
-      const stock = Number(body.stock);
       const categoryId = typeof body.category_id === 'string' ? body.category_id.trim() : '';
 
       if (
@@ -160,13 +165,15 @@ export class ProductsController {
           );
       }
 
-      if (!Number.isFinite(price) || price < 0) {
+      const price = coercePosNumber(body.price, false);
+      if (price === null) {
         return reply
           .status(400)
           .send(formatError(400, 'Harga harus berupa angka yang valid dan tidak negatif.'));
       }
 
-      if (!Number.isInteger(stock) || stock < 0) {
+      const stock = coercePosNumber(body.stock, true);
+      if (stock === null) {
         return reply
           .status(400)
           .send(formatError(400, 'Stok harus berupa bilangan bulat yang valid dan tidak negatif.'));
@@ -218,8 +225,8 @@ export class ProductsController {
       }
 
       if (body.price !== undefined && body.price !== null && body.price !== '') {
-        const price = Number(body.price);
-        if (!Number.isFinite(price) || price < 0) {
+        const price = coercePosNumber(body.price, false);
+        if (price === null) {
           return reply
             .status(400)
             .send(formatError(400, 'Harga harus berupa angka yang valid dan tidak negatif.'));
@@ -228,8 +235,8 @@ export class ProductsController {
       }
 
       if (body.stock !== undefined && body.stock !== null && body.stock !== '') {
-        const stock = Number(body.stock);
-        if (!Number.isInteger(stock) || stock < 0) {
+        const stock = coercePosNumber(body.stock, true);
+        if (stock === null) {
           return reply
             .status(400)
             .send(formatError(400, 'Stok harus berupa bilangan bulat yang valid dan tidak negatif.'));
