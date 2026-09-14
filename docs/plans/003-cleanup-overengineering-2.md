@@ -1,6 +1,7 @@
 # Plan 003 — Cleanup Over-Engineering Round 2
 
-> Status: IN_PROGRESS — dieksekusi orkestrator.
+> Status: DONE — dieksekusi orkestrator. 4 commit:
+> `663433b` dead code, `43e1598` updateProfile, `68279ed` coercePosNumber, `88d323e` issueSession.
 > Eksekutor: orkestrator (lihat `docs/plans/README.md`).
 
 ---
@@ -60,7 +61,9 @@ Satu commit per langkah → `git revert <commit>` per langkah. Tanpa migrasi sch
 
 ## Hasil Eksekusi (orkestrator)
 
-- **Catatan:** MariaDB/Docker tidak tersedia di WSL distro saat eksekusi → `pnpm test` (Uji langkah 1-4) di-SKIP. Validasi via `pnpm typecheck` + `pnpm lint` per langkah. Test wajib dijalankan ulang bila DB tersedia.
+- **Selesai:** step 1-4. `pnpm typecheck` + `pnpm lint` (0 error) hijau per langkah.
+- **Catatan:** MariaDB/Docker tidak tersedia di WSL distro saat eksekusi → `pnpm test` di-SKIP. Test wajib dijalankan ulang bila DB tersedia.
+- **Net:** -55 baris kode src (deletion 71 + tambahan 54 helper/wrapper dihilangkan).
 
 ## Referensi Orkestrator
 
