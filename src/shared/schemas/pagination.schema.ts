@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 
 export const DEFAULT_LIMIT = 20;
-export const MAX_LIMIT = 1000;
+export const MAX_LIMIT = 4000;
 
 /** Shared pagination query params */
 export const PaginationQuerySchema = Type.Object({
